@@ -2,6 +2,16 @@
 $body-bg: #000;
 $body-color: #111;
 
+.xis-default-page-size {
+    position: absolute;
+    top: 50px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 12px;
+    flex-direction: column;
+}
+
 // Then import Bootstrap an BootstrapVue SCSS files (order is important)
 @import 'node_modules/bootstrap/scss/bootstrap.scss';
 @import 'node_modules/bootstrap-vue/src/index.scss';

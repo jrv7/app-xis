@@ -7,57 +7,84 @@
 
     <div class="collapse navbar-collapse" id="navbarColor02">
       <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
-          <a class="nav-link" href="#">Home
-            <span class="sr-only">(current)</span>
+
+        <li
+          v-for="menu in getMainMenus" :key="menu.menu_url_hash"
+          class="nav-item"
+          :class="{
+            'active': (activeMainMenu == menu.menu_url_hash)
+          }"
+        >
+          <a class="nav-link" @click.prevent="goToMainMenu(menu.menu_url_hash)">
+            {{_XisT(menu.menu_title)}}
+            <span v-if="activeMainMenu == menu.menu_url_hash" class="sr-only">(current)</span>
           </a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Features</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Pricing</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">About</a>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Dropdown</a>
-          <div class="dropdown-menu">
-            <a class="dropdown-item" href="#">Action</a>
-            <a class="dropdown-item" href="#">Another action</a>
-            <a class="dropdown-item" href="#">Something else here</a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="#">Separated link</a>
-          </div>
-        </li>
+
       </ul>
       <form class="form-inline my-2 my-lg-0">
-        <input class="form-control mr-sm-2" type="text" placeholder="Search">
-        <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
+        <!-- <input class="form-control mr-sm-2" type="text" placeholder="Search">
+        <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button> -->
         <button
           class="btn btn-link my-2 my-sm-0"
           type="button"
           @click="signOut"
-        >Log out</button>
+        >{{_XisT('Log out')}}</button>
       </form>
     </div>
   </nav>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'XisNavbar',
   data () {
     return {
-
+      mainMenus: [],
+      activeMainMenu: null
+    }
+  },
+  computed: {
+    ...mapGetters([
+      'getSelectedMainMenu'
+    ]),
+    getMainMenus () {
+      return this.mainMenus;
     }
   },
   methods: {
+    goToMainMenu (menuId) {
+      if (this.activeMainMenu !== menuId) {
+        this.$store.commit('setSelectedMainMenu', menuId);
+  
+        this.activeMainMenu = menuId;
+        this.$emit('changed', menuId);
+  
+        this.$nextTick(() => {
+          this.$router.push('/' + menuId);
+        })
+      }
+    },
+    fetchMainMenus () {
+      this.$axios.get('system/menus/root')
+        .then(({data}) => {
+          this.mainMenus = data;
+          this.$store.commit('storeMainMenus', data);
+        })
+    },
 		signOut() {
 			this.$store.commit("login/signout");
 			this.$router.replace('/');
 		}
+  },
+  mounted () {
+    this.fetchMainMenus();
+
+    if (this.$store.getters.getSelectedMainMenu) {
+      this.activeMainMenu = this.$store.getters.getSelectedMainMenu;
+    }
   }
 }
 </script>

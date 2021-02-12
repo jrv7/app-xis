@@ -33,26 +33,15 @@ export default {
 	},
 	methods: {
     submitLogin (data) {
-      console.log('Dados de login');
-      console.log(data);
       this.$axios.post('login', {
         email: data.email,
         password: data.password
       })
         .then(({data}) => {
-          this.$axios.get('user/logged', {
-							headers: {
-								Authorization: 'Bearer ' + data.accessToken
-							}
-						})
-							.then(res => {
-								const loggedData = res.data;
+          this.$store.commit('login/setToken', { accessToken: data.accessToken, axios: this.$axios });
+          this.$router.push('splash');
 
-                this.$store.commit('login/setToken', { accessToken: data.accessToken, axios: this.$axios });
-                this.$router.push('Dashboard');
-							})
-
-						this.loading = false;
+          this.loading = false;
         });
     },
 		reset() {

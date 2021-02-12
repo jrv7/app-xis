@@ -11,6 +11,11 @@ const router = new VueRouter({
       path: '/',
       redirect: '/login'
     },
+    {
+      path: '/splash',
+      name: 'SplashScreen',
+      component: () => import('@/SplashScreen.vue' ),
+    },
     ...loginRoutes,
     ...adminRoutes,
     // ...trainingRoutes 
