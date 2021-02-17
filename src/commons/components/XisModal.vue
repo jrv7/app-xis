@@ -1,13 +1,13 @@
 <template>
   <a-modal
     class="ant-modal-full-right"
-    :title="title"
     :width="width + 'vw'"
     :visible="visible"
     :confirm-loading="confirmLoading"
     @ok="handleOk"
     @cancel="handleCancel"
   >
+    <template slot="title"><xis-translator :text="title" /></template>
     <slot />
   </a-modal>
 </template>

@@ -1,11 +1,13 @@
 <script>
+// import Translator from '@/commons/components/XisTranslator.vue'
+
 export default {
   name: 'StructureMixins',
   data () {
     return {
-        dictionary: null,
-        missingTranslation: [],
-        loadingDictionary: false
+      dictionary: null,
+      missingTranslation: [],
+      loadingDictionary: false
     }
   },
   methods: {
@@ -36,7 +38,9 @@ export default {
       return text;
     },
     _XisForceReload (to, from) {
-      location.reload();
+      setTimeout(() => {
+        location.reload();
+      }, 200);
     },
     loadData (blueprints, currentPage = 1, perPage = 20) {
       let currentFilters = this.$store.getters.getAdvancedFilters;

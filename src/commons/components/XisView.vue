@@ -4,7 +4,8 @@
   >
     <div class="horizontal-block">
       <div class="left-pane">
-        <h3>{{_XisT('table_name_singular.' + blueprints.db.name)}}</h3>
+        <h3><xis-translator :text="'table_name_singular.' + blueprints.db.name"></xis-translator></h3>
+        
         <hr>
         <div
           v-for="field in blueprints.db.fields" :key="'field-block-' + field.id"

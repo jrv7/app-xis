@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import './config/index.js';
+import '@/commons/boot.js';
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 import '@/assets/scss/xis.scss'
 

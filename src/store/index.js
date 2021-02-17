@@ -31,6 +31,9 @@ const mutations = {
   setDictionary: (state, dictionary) => {
     localStorage.setItem('xis-dictionary', JSON.stringify(dictionary));
   },
+  resetDictionary: () => {
+    localStorage.removeItem('xis-dictionary');
+  },
   setAdvancedFilters: (state, data) => {
     let findIndex = state.advancedFilters.findIndex(i => { return (i.menuHash == data.submenuId) });
 

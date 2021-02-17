@@ -18,15 +18,15 @@
           v-if="showDetailedHeader"
         >
           <div class="list-col" :style="{'width': '100%', 'display': 'flex', 'display': 'block'}">
-            {{_XisT('table_name.' + dbBlueprints.db.name)}}
+            <xis-translator :text="'table_name.' + dbBlueprints.db.name"></xis-translator>
           </div>
         </div>
         <div
           class="list-row detail-row"
           v-if="showDetailedHeader"
         >
-          <div class="list-col" :style="{'width': '80%', 'display': 'flex', 'display': 'block'}">
-            <span>Total {{_XisT('table_name_by_lines.' + dbBlueprints.db.name)}}</span>
+          <div class="list-col" :style="{'width': '80%'}">
+            <xis-translator :text="'Total'" /> <xis-translator :text="'table_name_by_lines.' + dbBlueprints.db.name" />
           </div>
           <div class="list-col" :style="{'width': '20%', 'text-align': 'right', 'display': 'flex', 'display': 'block'}">
             {{totalResults}}
@@ -56,8 +56,9 @@
             <button
               @click.prevent="openAdvancedFilters"
               class="btn btn-sm btn-link no-outline"
+              :style="{'display': 'flex'}"
             >
-              <font-awesome-icon :icon="['fas', 'filter']" /> {{_XisT('Filters')}}
+              <font-awesome-icon :icon="['fas', 'filter']" style="margin: auto; margin-top: 4px !important" /> <xis-translator :text="'Filters'" style="margin: auto" />
             </button>
           </div>
         </div>
