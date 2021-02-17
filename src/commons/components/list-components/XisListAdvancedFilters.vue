@@ -95,8 +95,13 @@ export default {
       this.visible = false;
     },
     applyAdvancedSearch () {
-      this.$store.commit('setAdvancedFilters', {submenuId: this.$route.params.submenuId, filters: this.filters});
-      this.$refs.advFilterModal.unsetLoading();
+      let vm = this;
+      vm.$store.commit('setAdvancedFilters', {submenuId: this.$route.params.submenuId, filters: this.filters});
+
+      setTimeout(() => {
+        vm.$emit('set');
+        vm.$refs.advFilterModal.unsetLoading();
+      }, 2000);
     },
     addNewFieldSearch (value) {
       if (this.filters.fieldSearches.length <= (value + 1)) {

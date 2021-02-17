@@ -1,10 +1,12 @@
 <template>
-  <a-form-item :label="label">
+  <a-form-item :label="_XisT(label)">
     <a-input
       v-decorator=""
       v-model="inputValue"
       :placeholder="placeholder"
       :type="getTypeByOption"
+      :size="'large'"
+      :disabled="disabled"
     >
       <a-select
         v-if="selectOption.length"
@@ -46,6 +48,7 @@ export default {
     selectOption: { type: Array, default: () => { return [] } },
     type: { type: String, default: 'text' },
     placeholder: {},
+    disabled: { type: Boolean, default: false },
     'select-target': {},
     'action-button': {},
     'action-button-icon': { type: String, default: '+' },
@@ -116,5 +119,12 @@ export default {
 
 .no-bottom-margin {
   margin-bottom: 0 !important;
+}
+
+.ant-form-item {
+  input {
+    // background-color: #0004;
+    // border-color: #000a;
+  }
 }
 </style>

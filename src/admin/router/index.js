@@ -10,7 +10,12 @@ const routes = [
   },
   {
       path: '/:mainMenuId/:submenuId',
-      component: () => import('@/admin/views/DefaulView.vue' ),
+      component: () => import('@/admin/views/DefaultView.vue' ),
+  },
+  {
+      name: 'default-view',
+      path: '/:mainMenuId/:submenuId/:ids',
+      component: () => import('@/admin/views/DefaultCrud.vue' ),
   }
 ]
 export default routes;

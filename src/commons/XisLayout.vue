@@ -31,6 +31,13 @@ export default {
       accessedMenu: null
     }
   },
+  watch: {
+    $route(to, from) { // react to route changes... 
+      if (to !== from) {
+        this._XisForceReload(to, from);
+      }
+    }
+  },
   methods: {
     mainMenuChanged (mainMenuId) {
       this.accessedMainMenu = mainMenuId;

@@ -1,15 +1,41 @@
 <template>
-  <div id="XisList">
+  <div
+    id="XisList"
+    v-if="dbBlueprints != null"
+  >
     <xis-list-advanced-filters
       v-model="showAdvancedFilters"
-      :blueprints="blueprints"
+      :blueprints="dbBlueprints"
+      @set="fetchData"
     ></xis-list-advanced-filters>
     <div
       class="xis-list"
       v-if="data"
     >
       <div class="list-header">
+        <div
+          class="list-row detail-row"
+          v-if="showDetailedHeader"
+        >
+          <div class="list-col" :style="{'width': '100%', 'display': 'flex', 'display': 'block'}">
+            {{_XisT('table_name.' + dbBlueprints.db.name)}}
+          </div>
+        </div>
+        <div
+          class="list-row detail-row"
+          v-if="showDetailedHeader"
+        >
+          <div class="list-col" :style="{'width': '80%', 'display': 'flex', 'display': 'block'}">
+            <span>Total {{_XisT('table_name_by_lines.' + dbBlueprints.db.name)}}</span>
+          </div>
+          <div class="list-col" :style="{'width': '20%', 'text-align': 'right', 'display': 'flex', 'display': 'block'}">
+            {{totalResults}}
+          </div>
+        </div>
         <div class="list-row">
+          <div class="list-col left-border" :style="{'width': '80px', 'display': 'flex'}">
+            #
+          </div>
           <div
             v-for="col in getCols" :key="'xis-list-header-col-' + col.title"
             :style="{
@@ -17,7 +43,13 @@
             }"
             class="list-col"
           >
-            <span>{{_XisT(col.title)}}</span>
+            <xis-list-orderer
+              :field-id="col.id"
+              @ordered="fetchData()"
+            >
+              <span>{{_XisT(col.table.name + '.' + col.title)}}</span>
+            </xis-list-orderer>
+            
           </div>
 
           <div class="list-col left-border" :style="{'width': (actionColWidth + 'px'), 'margin-left': 'auto', 'display': 'flex'}">
@@ -59,8 +91,11 @@
       >
         <div
           class="list-row"
-          v-for="row in data" :key="'xis-list-row-' + row.id"
+          v-for="(row, rowIndex) in data" :key="'xis-list-row-' + row.id"
         >
+          <div class="list-col left-border" :style="{'width': '80px', 'display': 'flex', 'color': '#999'}">
+            {{rowIndex + 1}}
+          </div>
           <div
             v-for="col in getCols" :key="'xis-list-header-col-' + col.title"
             :style="{
@@ -82,8 +117,9 @@
 
           <div class="list-col left-border" :style="{'width': (actionColWidth + 'px'), 'margin-left': 'auto'}">
             <xis-list-actions
-              :actions="blueprints.db.list_actions"
+              :blueprints="dbBlueprints"
               :row="row"
+              @action-done="goToAction"
             ></xis-list-actions>
           </div>
         </div>
@@ -106,7 +142,10 @@
         </div>
       </div>
       
-      <div class="list-foot">
+      <div
+        class="list-foot"
+        v-show="totalPages > 1"
+      >
         <div class="list-row">
           <div class="list-col" style="width: 100%; padding: 8px 12px;">
             <xis-list-paginator
@@ -129,14 +168,21 @@
 import XisListActions from './list-components/XisListActions.vue';
 import XisListPaginator from './list-components/XisListPaginator.vue';
 import XisListAdvancedFilters from './list-components/XisListAdvancedFilters.vue';
+import XisListOrderer from './list-components/XisListOrderer.vue';
 
 export default {
   name: 'XisList',
-  components: { XisListActions, XisListPaginator, XisListAdvancedFilters },
+  components: { XisListActions, XisListPaginator, XisListAdvancedFilters, XisListOrderer },
   props: {
+    byTable: {
+      type: Boolean,
+      default: false
+    },
+    table: {
+      type: Number
+    },
     blueprints: {
-      type: Object,
-      required: true
+      type: Object
     },
     height: {
       type: Number,
@@ -145,13 +191,28 @@ export default {
     actionColWidth: {
       type: Number,
       default: 140
+    },
+    defaultPerPage: {
+      type: Number,
+      default: 50
+    },
+    simpleColumns: {
+      type: Boolean,
+      default: false
+    },
+    'route-limiters': {},
+    'show-detailed-header': {
+      type: Boolean,
+      default: false
     }
   },
   data () {
     return {
+      dbBlueprints: null,
       perPage: 50,
       currentPage: 1,
-      totalResults: 1,
+      totalResults: 0,
+      totalPages: 0,
       loading: false,
       data: [],
       cols: [],
@@ -172,19 +233,39 @@ export default {
   },
   computed: {
     getCols () {
+      if (!this.dbBlueprints) return [];
+
       let totalSetWidth = 0;
       let countColsWithWidth = 0;
       const actionsColWidth = this.actionColWidth;
-      const countCols = this.blueprints.db.fields.filter(col => { return col.display_in_lists }).length;
+      const countCols = this.dbBlueprints.db.fields.filter(col => {
+        if (this.simpleColumns) {
+          return ((!!!col.primary_key) && col.display_in_lists && (!!col.not_null))
+        }
 
-      this.blueprints.db.fields.filter(col => { return col.display_in_lists }).forEach(col => {
+        return col.display_in_lists
+      }).length;
+
+      this.dbBlueprints.db.fields.filter(col => {
+        if (this.simpleColumns) {
+          return ((!!!col.primary_key) && col.display_in_lists && (!!col.not_null))
+        }
+
+        return col.display_in_lists
+      }).forEach(col => {
         if (col.width) {
           totalSetWidth += parseInt(col.width);
           countColsWithWidth++;
         }
       });
 
-      return this.blueprints.db.fields.filter(col => { return col.display_in_lists }).map(col => {
+      let returnedColumns = this.dbBlueprints.db.fields.filter(col => {
+        if (this.simpleColumns) {
+          return ((!!!col.primary_key) && col.display_in_lists && (!!col.not_null))
+        }
+
+        return col.display_in_lists
+      }).map(col => {
         if (col.width) {
           col.width = col.width + 'px';
         } else if (col.primary_key) {
@@ -198,6 +279,11 @@ export default {
         
         return col;
       });
+
+      console.log('Returned columns: ');
+      console.log(returnedColumns);
+
+      return returnedColumns;
     }
   },
   methods: {
@@ -219,13 +305,18 @@ export default {
       return row[col.field] ?? '-';
     },
     fetchData () {
+      if (!this.dbBlueprints) return null;
+
       this.loading = true;
-      this.loadData(this.blueprints, this.currentPage, this.perPage)
+      this.loadData(this.dbBlueprints, this.currentPage, this.perPage)
         .then(({data}) => {
+          console.log('List data loaded:');
+          console.log(data);
           this.data = data.data;
 
           this.currentPage = data.current_page;
           this.totalResults = data.total;
+          this.totalPages = data.last_page;
 
           this.loading = false;
         })
@@ -236,11 +327,40 @@ export default {
     onShowSizeChange(current, pageSize) {
       console.log('Mudando o tamanho');
       this.perPage = pageSize;
+    },
+    changeOrder (event, order) {
+      console.log('Changin order');
+      console.log(order);
+    },
+    goToAction (ids) {
+      console.log('Going to action');
+      console.log(ids);
     }
   },
   mounted () {
-    this.fetchData();
-    this.openAdvancedFilters();
+    if (this.defaultPerPage) {
+      this.perPage = this.defaultPerPage;
+    }
+
+    if (this.routeLimiters) {
+      console.log('Carregar dados com limitadores:');
+      console.log(this.routeLimiters);
+    }
+
+    if (this.blueprints) {
+      this.dbBlueprints = this.blueprints;
+      this.fetchData();
+    } else if (this.table) {
+      this.fetchBlueprintsByTable(this.table)
+        .then( ({data}) => {
+          console.log('Blueprints carregados');
+          console.log(data);
+          this.dbBlueprints = data;
+
+          this.fetchData();
+        });
+    }
+    // this.openAdvancedFilters();
   }
 }
 </script>
@@ -264,20 +384,34 @@ export default {
       &>.list-header {
         position: inherit;
         display: flex;
-        flex-flow: nowrap;
+        flex-flow: wrap;
         width: 100%;
         overflow-y: scroll;
         overflow-x: hidden;
 
         &>.list-row {
-          border-bottom: 1px solid #ccc;
+          background-color: #fff;
+          border: none;
+
+          &:last-of-type {
+            border-bottom: 1px solid #ccc;
+          }
 
           &>.list-col {
+            display: flex;
+            flex-flow: nowrap;
             line-height: 52px;
             border-bottom: 1px solid #eee;
             font-size: 1rem;
-            text-transform: capitalize;
+            // text-transform: capitalize;
             white-space: nowrap;
+
+            &>* {
+              margin: auto 0;
+            }
+            &>.order-select {
+              padding: 0;
+            }
           }
         }
       }
@@ -337,7 +471,7 @@ export default {
           overflow: hidden;
 
           &.left-border {
-          border-left: 1px solid #ddd;
+            border-left: 1px solid #ddd;
           }
           
           &>span {
@@ -348,6 +482,10 @@ export default {
           }
         }
       }
+    }
+
+    &.bordered {
+      border: 1px solid #9996;
     }
   }
 </style>

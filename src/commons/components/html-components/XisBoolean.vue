@@ -1,14 +1,21 @@
 <template>
-  <a-form-item :label="label">
-    <a-radio-group v-model="selected" @change="onChange">
-      <a-radio-button :value="null">
+  <a-form-item :label="_XisT(label)">
+    <a-radio-group
+      v-model="selected"
+      @change="onChange"
+      :disabled="readonly"
+    >
+      <a-radio-button
+        :value="null"
+        v-if="hasIrrelevant"
+      >
         Irrelevant
       </a-radio-button>
       <a-radio-button :value="true">
-        Yes
+        {{_XisT('Yes')}}
       </a-radio-button>
       <a-radio-button :value="false">
-        No
+        {{_XisT('No')}}
       </a-radio-button>
     </a-radio-group>
   </a-form-item>
@@ -24,6 +31,8 @@ export default {
     fieldId: { type: Number, retuired: true },
     name: { type: String, required: true },
     label: {},
+    hasIrrelevant: { type: Boolean, default: true },
+    readonly: { type: Boolean, default: false }
   },
   data () {
     return {

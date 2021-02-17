@@ -1,17 +1,23 @@
 <template>
-  <a-form-item :label="label">
+  <a-form-item :label="_XisT(label)">
     <a-select
       :mode="mode"
       v-model="selected"
       :placeholder="_XisT('Please select')"
       style="width: 100%"
+      :size="'large'"
       @change="handleChange"
     >
       <a-select-option
-        v-for="(option, index) in selectOptions" :key="'select-' + name + '-option-' + index"
-        :value="option.id"
+        :value="null"
       >
-        {{option.value}}
+        {{_XisT('Select...')}}
+      </a-select-option>
+      <a-select-option
+        v-for="(option, index) in selectOptions" :key="'select-' + name + '-option-' + index"
+        :value="option.id || option"
+      >
+        {{useTranslation ? _XisT(option.value || option) : (option.value || option)}}
       </a-select-option>
     </a-select>
   </a-form-item>
@@ -50,7 +56,8 @@ export default {
   data () {
     return {
       selectOptions: [],
-      selected: []
+      selected: [],
+      useTranslation: false
     }
   },
   methods: {
@@ -60,6 +67,11 @@ export default {
     loadOptions () {
       this.$axios.get(this.apiUrl).then( ({data}) => {
         this.selectOptions = data;
+
+        if (data.length <= 10) {
+          this.useTranslation = true;
+        }
+
         if (this.defaultValue) {
           this.selected = JSON.parse(JSON.stringify(this.defaultValue));
         }
@@ -70,7 +82,11 @@ export default {
     if (this.mode == 'multiple') {
       this.selected = [];
     } else {
-      this.selected = null
+      if (this.value) {
+        this.selected = this.value;
+      } else {
+        this.selected = null;
+      }
     }
 
     if (this.apiMode) {
@@ -82,6 +98,16 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 
+
+.ant-form-item {
+  .ant-select {
+    .ant-select-selection {
+      // background-color: #0004;
+      // border-color: #000a;
+      // color: #ccc;
+    }
+  }
+}
 </style>

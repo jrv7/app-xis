@@ -13,6 +13,7 @@ const state = {
   },
   dictionaryMounted: false,
   advancedFilters: [],
+  listOrders: [],
   router
 };
 
@@ -31,7 +32,81 @@ const mutations = {
     localStorage.setItem('xis-dictionary', JSON.stringify(dictionary));
   },
   setAdvancedFilters: (state, data) => {
-    sessionStorage.setItem(('advanced-filters-' + data.submenuId), JSON.stringify(data.filters));
+    let findIndex = state.advancedFilters.findIndex(i => { return (i.menuHash == data.submenuId) });
+
+    if (findIndex >= 0) {
+      state.advancedFilters[findIndex].filters = JSON.stringify(data.filters);
+    } else {
+      state.advancedFilters.push({
+        menuHash: data.submenuId,
+        filters: JSON.stringify(data.filters)
+      });
+    }
+    localStorage.setItem(('advanced-filters-' + data.submenuId), JSON.stringify(data.filters));
+  },
+  setListOrder: (state, data) => {
+    let setOrders = null;
+    setOrders = localStorage.getItem('list-orders');
+    if (!setOrders) {
+      setOrders = localStorage.getItem('list-orders');
+    }
+    if (!setOrders) {
+      setOrders = localStorage.getItem('list-orders');
+    }
+
+    if (setOrders != null) {
+      setOrders = JSON.parse(setOrders);
+    }
+
+    if (!state.listOrders.length) {
+      if (setOrders != null) {
+        state.listOrders = setOrders;
+      }
+    }
+
+    let menuIndex = state.listOrders.findIndex(i => { return (i.menuHash == data.submenuId) });
+
+    if (menuIndex >= 0) {
+      let oldOrder = state.listOrders[menuIndex].order;
+
+      let fieldOrderIndex = oldOrder.findIndex(i => { return (i.fieldId == data.fieldId) });
+
+      if (fieldOrderIndex >= 0) {
+        oldOrder[fieldOrderIndex].order = data.order;
+      } else {
+        if (data.order) {
+          let newOrder = {
+            fieldId: data.fieldId,
+            order: data.order
+          };
+
+          oldOrder.push(newOrder);
+        }
+      }
+    } else {
+      if (data.order) {
+        let newOrder = [
+          {
+            fieldId: data.fieldId,
+            order: data.order
+          }
+        ];
+        state.listOrders.push(
+          {
+            menuHash: data.submenuId,
+            order: newOrder
+          }
+        );
+      }
+    }
+
+    state.listOrders = state.listOrders.map(i => {
+      i.order = i.order.filter(j => { return (j.order > 0) });
+
+      return i;
+    })
+
+    localStorage.setItem('list-orders', JSON.stringify(state.listOrders));
   }
 };
 
@@ -62,7 +137,53 @@ const getters = {
   },
   getAdvancedFilters: (state) => {
     let menuHash = state.router.history.current.params.submenuId;
-    return sessionStorage.getItem('advanced-filters-' + menuHash);
+    
+    let findIndex = state.advancedFilters.findIndex(i => { return (i.menuHash == menuHash) });
+
+    if (findIndex >= 0) {
+      return state.advancedFilters[findIndex].filters;
+    }
+
+    let setFilters = null;
+    setFilters = localStorage.getItem('advanced-filters-' + menuHash);
+    if (!setFilters) {
+      setFilters = localStorage.getItem('advanced-filters-' + menuHash);
+    }
+    if (!setFilters) {
+      setFilters = localStorage.getItem('advanced-filters-' + menuHash);
+    }
+
+    return setFilters;
+  },
+  getListOrders: (state) => {
+    let menuHash = state.router.history.current.params.submenuId;
+    
+    let findIndex = state.listOrders.findIndex(i => { return (i.menuHash == menuHash) });
+
+    if (findIndex >= 0) {
+      return state.listOrders[findIndex].order;
+    }
+
+    let setOrders = null;
+
+    setOrders = localStorage.getItem('list-orders');
+    if (!setOrders) {
+      setOrders = localStorage.getItem('list-orders');
+    }
+    if (!setOrders) {
+      setOrders = localStorage.getItem('list-orders');
+    }
+
+    if (setOrders != null) {
+      setOrders = JSON.parse(setOrders);
+      let findIndex = setOrders.findIndex(i => { return (i.menuHash == menuHash) });
+
+      if (findIndex >= 0) {
+        return setOrders[findIndex].order;
+      }
+    }
+    
+    return null;
   }
 };
 
