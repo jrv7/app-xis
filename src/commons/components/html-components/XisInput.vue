@@ -1,5 +1,4 @@
 <template>
-<<<<<<< HEAD
   <a-form-item
     :class="{'is-hidden': (!!isHidden)}"
   >
@@ -7,10 +6,6 @@
       v-show="(label != null) && (!!!isHidden)"
       :text="label"
     />
-=======
-  <a-form-item>
-    <xis-translator :text="label" />
->>>>>>> 0789e37c42e9933a3b00c0d053bedbd97c91ce70
     <a-input
       v-decorator="[
         name,
