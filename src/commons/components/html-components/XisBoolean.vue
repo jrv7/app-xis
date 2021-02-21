@@ -1,9 +1,16 @@
 <template>
-  <a-form-item :label="_XisT(label)">
+  <a-form-item>
+    <xis-translator :text="label" />
     <a-radio-group
-      v-model="selected"
+      v-decorator="[
+        name,
+        {
+          rules: [{ required: required, message: _XisT('Required.field') }],
+          initialValue: (!!selected)
+        },
+      ]"
       @change="onChange"
-      :disabled="readonly"
+      :disabled="readonly || disabled"
     >
       <a-radio-button
         :value="null"
@@ -32,16 +39,27 @@ export default {
     name: { type: String, required: true },
     label: {},
     hasIrrelevant: { type: Boolean, default: true },
-    readonly: { type: Boolean, default: false }
+    readonly: { type: Boolean, default: false },
+    disabled: { type: Boolean, default: false },
+    required: { type: Boolean, default: false },
   },
   data () {
     return {
-      selected: null
+      selected: null,
+      afterMount: false
     }
   },
   watch: {
+    value (newValue) {
+      this.selected = ((newValue == null) ? null : (!!newValue));
+    },
     defaultValue (newValue) {
       this.selected = newValue;
+    },
+    selected (newValue) {
+      if (this.afterMount) {
+        this.$emit('input', newValue);
+      }
     }
   },
   methods: {
@@ -50,7 +68,8 @@ export default {
     }
   },
   mounted () {
-    this.selected = this.value;
+    this.selected = ((this.hasIrrelevant) ? ((this.value == null) ? null : (!!this.value)) : (!!this.value));
+    this.afterMount = true;
   }
 }
 </script>

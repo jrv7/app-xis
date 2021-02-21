@@ -1,12 +1,24 @@
 <template>
-  <a-form-item :label="_XisT(label)">
+  <a-form-item
+    :class="{'is-hidden': (!!isHidden)}"
+  >
+    <xis-translator
+      v-show="(label != null) && (!!!isHidden)"
+      :text="label"
+    />
     <a-input
-      v-decorator=""
-      v-model="inputValue"
+      v-decorator="[
+        name,
+        {
+          rules: validationRules,
+          initialValue: value
+        }
+      ]"
       :placeholder="placeholder"
       :type="getTypeByOption"
       :size="'large'"
       :disabled="disabled"
+      @change="checkChanges"
     >
       <a-select
         v-if="selectOption.length"
@@ -42,6 +54,7 @@
 export default {
   name: 'XisInput',
   props: {
+    form: {},
     value: {},
     name: { type: String, required: true },
     label: {},
@@ -49,6 +62,11 @@ export default {
     type: { type: String, default: 'text' },
     placeholder: {},
     disabled: { type: Boolean, default: false },
+    required: { type: Boolean, default: false },
+    'is-email': { type: Boolean, default: false },
+    'is-hidden': { type: Boolean, default: false },
+    'is-password': { type: Boolean, default: false },
+    'compareTo': { type: String, default: null },
     'select-target': {},
     'action-button': {},
     'action-button-icon': { type: String, default: '+' },
@@ -57,17 +75,20 @@ export default {
   data () {
     return {
       inputValue: null,
-      selectedOption: null
+      selectedOption: null,
+      afterMount: false
     }
   },
   watch: {
     inputValue (newValue) {
-      if (this.selectOption.length) {
-        if (this.selectedOption && newValue) {
-          this.$emit('select-changed', this.actionButtonUniqueId, {id: this.selectedOption, value: newValue});
+      if (this.afterMount) {
+        if (this.selectOption.length) {
+          if (this.selectedOption && newValue) {
+            this.$emit('select-changed', this.actionButtonUniqueId, {id: this.selectedOption, value: newValue});
+          }
+        } else {
+          this.$emit('input', newValue);
         }
-      } else {
-        this.$emit('input', newValue);
       }
     },
     selectedOption (newValue) {
@@ -77,8 +98,36 @@ export default {
     }
   },
   computed: {
+    validationRules () {
+      let rules = [];
+
+      if (this.required) {
+        rules.push({ required: true, message: this._XisT('Required.field') });
+      }
+
+      if (this.isEmail) {
+        rules.push({ type: 'email', message: this._XisT('error_message_invalid_email') });
+      }
+
+      if (this.isPassword) {
+        rules.push({
+          validator: this.validateToNextPassword,
+        })
+      }
+
+      if (this.compareTo) {
+        rules.push({
+          validator: this.compareToFirstPassword,
+        })
+      }
+
+      return rules;
+    },
     getTypeByOption () {
       let vm = this;
+      if (this.isHidden) {
+        return 'hidden';
+      }
       if (vm.selectOption.length) {
         let seletedTypeIndex = vm.selectOption.findIndex(i => { return (parseInt(i.id) == parseInt(vm.selectedOption)) });
         if (seletedTypeIndex >= 0) {
@@ -96,8 +145,29 @@ export default {
     }
   },
   methods: {
+    validateToNextPassword(rule, value, callback) {
+      const form = this.form;
+      if (value) {
+        form.validateFields(['confirm_' + this.name], { force: true });
+      }
+      callback();
+    },
+    compareToFirstPassword(rule, value, callback) {
+      const form = this.form;
+      if (value && value !== form.getFieldValue(this.compareTo)) {
+        callback('Two passwords that you enter is inconsistent!');
+      } else {
+        callback();
+      }
+    },
     onSelectChange (value) {
       this.selectedOption = value;
+    },
+    checkChanges () {
+      console.log('Mudou');
+      setTimeout(() => {
+        console.log(this.form.getFieldValue('password'));
+      }, 100)
     }
   },
   mounted () {
@@ -106,6 +176,10 @@ export default {
     } else {
       this.inputValue = this.value;
     }
+
+    setTimeout(() => {
+      this.afterMount = true;
+    }, 200)
   }
 }
 </script>
@@ -126,5 +200,9 @@ export default {
     // background-color: #0004;
     // border-color: #000a;
   }
+}
+
+.is-hidden {
+  margin-bottom: 0;
 }
 </style>

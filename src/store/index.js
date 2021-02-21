@@ -23,13 +23,17 @@ const mutations = {
   },
   storeAccessedMenu: (state, accessedMenu) => {
     sessionStorage.setItem('accessed-menu', accessedMenu.menu_url_hash);
-    state.accessedMenu = accessedMenu.menu_url_hash;
+    state.xisMenus.accessedMenu = accessedMenu.menu_url_hash;
   },
   storeMainMenus: (state, mainMenus) => {
+    sessionStorage.setItem('main-menus', JSON.stringify(mainMenus));
     state.xisMenus.main = mainMenus;
   },
   setDictionary: (state, dictionary) => {
     localStorage.setItem('xis-dictionary', JSON.stringify(dictionary));
+  },
+  resetDictionary: () => {
+    localStorage.removeItem('xis-dictionary');
   },
   setAdvancedFilters: (state, data) => {
     let findIndex = state.advancedFilters.findIndex(i => { return (i.menuHash == data.submenuId) });
@@ -111,8 +115,23 @@ const mutations = {
 };
 
 const getters = {
+  getLastAccessedMenu: () => {
+    let lastAccessedMenu = {
+      mainMenu: sessionStorage.getItem("last-accessed-main-menu-hash"),
+      submenu: sessionStorage.getItem("last-accessed-menu-hash"),
+      routeName: sessionStorage.getItem("last-accessed-menu-name"),
+      ids: sessionStorage.getItem("last-accessed-menu-ids"),
+    }
+
+    return lastAccessedMenu;
+  },
   getStoredMainMenus: () => {
-    return state.xisMenus.main;
+    let mainMenus = sessionStorage.getItem('main-menus');
+    if (mainMenus != null) {
+      return JSON.parse(mainMenus);
+    } else {
+      return [];
+    }
   },
   getSelectedMainMenu: () => {
     const storedItem = sessionStorage.getItem('accessed-main-menu');
@@ -129,8 +148,11 @@ const getters = {
     if (storedItem !== null) {
       return storedItem;
     } else {
-      return state.accessedMenu;
+      return state.xisMenus.accessedMenu;
     }
+  },
+  getMenuStructure: () => {
+    return state.xisMenus.accessedMenu;
   },
   getDictionary: () => {
     return localStorage.getItem('xis-dictionary');

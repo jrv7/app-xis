@@ -1,11 +1,13 @@
 <template>
-  <a-form-item :label="_XisT(label)">
+  <a-form-item>
+    <xis-translator :text="label" />
     <a-select
       :mode="mode"
       v-model="selected"
       :placeholder="_XisT('Please select')"
       style="width: 100%"
       :size="'large'"
+      :disabled="disabled"
       @change="handleChange"
     >
       <a-select-option
@@ -51,13 +53,22 @@ export default {
       required: () => {
         return !!this.apiMode;
       }
-    }
+    },
+    disabled: { type: Boolean, default: false }
   },
   data () {
     return {
       selectOptions: [],
-      selected: [],
-      useTranslation: false
+      selected: null,
+      useTranslation: false,
+      afterMount: false
+    }
+  },
+  watch: {
+    selected (newValue) {
+      if (this.afterMount) {
+        this.$emit('input', newValue);
+      }
     }
   },
   methods: {
@@ -88,6 +99,8 @@ export default {
         this.selected = null;
       }
     }
+
+    this.afterMount = true;
 
     if (this.apiMode) {
       this.loadOptions();

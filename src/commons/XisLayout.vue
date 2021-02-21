@@ -10,7 +10,9 @@
         @changed="menuChanged"
       ></xis-side-nav>
 
-      <xis-main-nav>
+      <xis-main-nav
+        :blueprints="blueprints"
+      >
         <slot />
       </xis-main-nav>
     </div>
@@ -25,6 +27,9 @@ import XisMainNav from '@/commons/xis-layout/XisMainNav.vue'
 export default {
   name: "XisLayout",
   components: { XisNavbar, XisSideNav, XisMainNav },
+  props: {
+    blueprints: {}
+  },
   data () {
     return {
       accessedMainMenu: null,

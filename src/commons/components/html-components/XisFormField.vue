@@ -10,11 +10,12 @@
         :name="field.name"
         :placeholder="field.name"
         :label="`${field.table.name}.${field.name}`"
-        v-model="data[field.name]"
+        v-model="currentValue"
         :apiMode="true"
-        :disabled="!!field.primary_key"
+        :disabled="(!!field.primary_key) || disbaled"
         :apiUrl="`/data/get-as-option/${joined.right_field.table.id}/${joined.visible_field.id}`"
         :readonly="readonly"
+        :required="required"
       ></xis-select>
     </div>
 
@@ -23,38 +24,73 @@
       :name="field.name"
       :placeholder="field.name"
       :label="`${field.table.name}.${field.name}`"
-      v-model="data[field.name]"
+      v-model="currentValue"
       :options="JSON.parse(field.default_value)"
       :readonly="readonly"
+      :disabled="disbaled"
+      :required="required"
     ></xis-select>
 
     <xis-boolean
       v-else-if="[8].includes(field.type.id)"
-      v-model="data[field.name]"
+      v-model="currentValue"
       :fieldId="field.id"
       :name="field.name"
       :label="`${field.table.name}.${field.name}`"
       :hasIrrelevant="false"
       :readonly="readonly"
+      :disabled="disbaled"
+      :required="required"
     ></xis-boolean>
 
     <xis-date-time
       v-else-if="[12, 13, 19, 21].includes(field.type.id)"
-      v-model="data[field.name]"
+      v-model="currentValue"
       :fieldId="field.id"
       :name="field.name"
       :label="`${field.table.name}.${field.name}`"
       :readonly="readonly"
+      :disabled="disbaled"
+      :required="required"
     ></xis-date-time>
+
+    <div
+      v-else-if="[14].includes(field.type.id)"
+    >
+      <xis-input
+        type="password"
+        :form="form"
+        :name="field.name"
+        :placeholder="field.name"
+        :label="`${field.table.name}.${field.name}`"
+        v-model="currentValue"
+        :disabled="(!!field.primary_key) || disbaled"
+        :readonly="readonly"
+        :isPassword="true"
+      ></xis-input>
+      <xis-input
+        type="password"
+        :form="form"
+        :name="'confirm_' + field.name"
+        :placeholder="_XisT('Confirm') + ' ' + field.name"
+        :label="null"
+        :disabled="(!!field.primary_key) || disbaled"
+        :readonly="readonly"
+        :compareTo="field.name"
+      ></xis-input>
+    </div>
 
     <xis-input
       v-else
+      :form="form"
       :name="field.name"
       :placeholder="field.name"
       :label="`${field.table.name}.${field.name}`"
-      v-model="data[field.name]"
-      :disabled="!!field.primary_key"
+      v-model="currentValue"
+      :disabled="(!!field.primary_key) || disbaled"
       :readonly="readonly"
+      :required="required"
+      :isHidden="(!!field.primary_key)"
     ></xis-input>
   </div>
 </template>
@@ -69,20 +105,35 @@ export default {
   name: 'XisFormField',
   components: { XisInput, XisSelect, XisBoolean, XisDateTime },
   props: {
+    form: {},
+    value: {},
     field: { type: Object, required: true },
     data: { type: Object, default: () => { return {} }},
-    readonly: { type: Boolean, default: false }
+    readonly: { type: Boolean, default: false },
+    disbaled: { type: Boolean, default: false },
+    required: { type: Boolean, defatul: false }
   },
   data () {
     return {
-
+      currentValue: null,
+      afterMounted: false
     }
   },
-  mounted () {
-    // if (this.field.type.id == 10) {
-      // console.log('Campo montado: ');
-      // console.log(this.field);
-    // }
+  watch: {
+    currentValue (newValue) {
+      if (this.afterMounted) {
+        this.$emit('input', newValue);
+      }
+    }
+  },
+  created () {
+    if (this.value) {
+      this.currentValue = this.value;
+    }
+
+    setTimeout(() => {
+      this.afterMounted = true;
+    }, 200)
   }
 }
 </script>

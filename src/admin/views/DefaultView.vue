@@ -1,6 +1,7 @@
 <template>
   <xis-layout
     id="XisDefaultView"
+    :blueprints="blueprints"
     @menuChanged="Reload"
   >
     <xis-loader v-if="loading || (blueprints === null)"></xis-loader>

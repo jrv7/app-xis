@@ -1,14 +1,36 @@
 <script>
+// import Translator from '@/commons/components/XisTranslator.vue'
+
 export default {
   name: 'StructureMixins',
   data () {
     return {
-        dictionary: null,
-        missingTranslation: [],
-        loadingDictionary: false
+      dictionary: null,
+      missingTranslation: [],
+      loadingDictionary: false
     }
   },
   methods: {
+    feedback (status, message) {
+      switch (status) {
+        case 1: {
+          this.$message.success(
+            this._XisT(message),
+            6,
+          );
+        } break;
+
+        case 0: {
+          this.$message.error(
+            this._XisT(message),
+            6,
+          );
+        } break;
+      }
+    },
+    deepClone (object) {
+      return JSON.parse(JSON.stringify(object));
+    },
     async fetchBlueprintsByTable (tableId) {
       console.log('Getting blueprints by table');
       console.log(tableId);
@@ -36,7 +58,9 @@ export default {
       return text;
     },
     _XisForceReload (to, from) {
-      location.reload();
+      setTimeout(() => {
+        location.reload();
+      }, 200);
     },
     loadData (blueprints, currentPage = 1, perPage = 20) {
       let currentFilters = this.$store.getters.getAdvancedFilters;

@@ -53,8 +53,6 @@ export default {
     this.accessedMenu = this.$store.getters.getSelectedMenu;
     this.getBlueprints(this.$route.params.submenuId)
       .then( ({data}) => {
-        console.log('Blueprints carregados para o DefaultView');
-        console.log(data);
         this.blueprints = data;
         this.loading = false;
       });

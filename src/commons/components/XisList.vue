@@ -18,15 +18,15 @@
           v-if="showDetailedHeader"
         >
           <div class="list-col" :style="{'width': '100%', 'display': 'flex', 'display': 'block'}">
-            {{_XisT('table_name.' + dbBlueprints.db.name)}}
+            <xis-translator :text="'table_name.' + dbBlueprints.db.name"></xis-translator>
           </div>
         </div>
         <div
           class="list-row detail-row"
           v-if="showDetailedHeader"
         >
-          <div class="list-col" :style="{'width': '80%', 'display': 'flex', 'display': 'block'}">
-            <span>Total {{_XisT('table_name_by_lines.' + dbBlueprints.db.name)}}</span>
+          <div class="list-col" :style="{'width': '80%'}">
+            <xis-translator :text="'Total'" /> <xis-translator :text="'table_name_by_lines.' + dbBlueprints.db.name" />
           </div>
           <div class="list-col" :style="{'width': '20%', 'text-align': 'right', 'display': 'flex', 'display': 'block'}">
             {{totalResults}}
@@ -56,8 +56,9 @@
             <button
               @click.prevent="openAdvancedFilters"
               class="btn btn-sm btn-link no-outline"
+              :style="{'display': 'flex'}"
             >
-              <font-awesome-icon :icon="['fas', 'filter']" /> {{_XisT('Filters')}}
+              <font-awesome-icon :icon="['fas', 'filter']" style="margin: auto; margin-top: 4px !important" /> <xis-translator :text="'Filters'" style="margin: auto" />
             </button>
           </div>
         </div>
@@ -91,7 +92,7 @@
       >
         <div
           class="list-row"
-          v-for="(row, rowIndex) in data" :key="'xis-list-row-' + row.id"
+          v-for="(row, rowIndex) in data" :key="'xis-list-row-' + (row.id || rowIndex)"
         >
           <div class="list-col left-border" :style="{'width': '80px', 'display': 'flex', 'color': '#999'}">
             {{rowIndex + 1}}
@@ -280,9 +281,6 @@ export default {
         return col;
       });
 
-      console.log('Returned columns: ');
-      console.log(returnedColumns);
-
       return returnedColumns;
     }
   },
@@ -310,8 +308,6 @@ export default {
       this.loading = true;
       this.loadData(this.dbBlueprints, this.currentPage, this.perPage)
         .then(({data}) => {
-          console.log('List data loaded:');
-          console.log(data);
           this.data = data.data;
 
           this.currentPage = data.current_page;

@@ -4,17 +4,14 @@
   >
     <div class="horizontal-block">
       <div class="left-pane">
-        <h3>{{_XisT('table_name_singular.' + blueprints.db.name)}}</h3>
+        <h3><xis-translator :text="'table_name_singular.' + blueprints.db.name"></xis-translator></h3>
+        
         <hr>
-        <div
-          v-for="field in blueprints.db.fields" :key="'field-block-' + field.id"
-        >
-          <xis-form-field
-            :field="field"
-            :data="data"
-            :readonly="true"
-          ></xis-form-field>
-        </div>
+
+        <xis-form
+          :blueprints="blueprints"
+          :data="data"
+        />
       </div>
 
       <div class="right-pane">
@@ -55,12 +52,12 @@
 </template>
 
 <script>
-import XisFormField from '@/commons/components/html-components/XisFormField.vue';
+import XisForm from '@/commons/components/html-components/XisForm.vue';
 import XisList from '@/commons/components/XisList.vue';
 
 export default {
   name: 'XisView',
-  components: { XisFormField, XisList },
+  components: { XisForm, XisList },
   props: {
     blueprints: {
       type: Object,
@@ -106,7 +103,7 @@ export default {
       .left-pane {
         padding: 12px;
         width: calc(60% - 12px);
-        max-height: 600px;
+        // max-height: 600px;
         overflow: auto;
         box-shadow: 0 0 8px #ddd;
         border: 1px solid #ccc;

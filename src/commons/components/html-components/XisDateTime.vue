@@ -1,5 +1,6 @@
 <template>
-  <a-form-item :label="_XisT(label)">
+  <a-form-item>
+    <xis-translator :text="label" />
     <a-date-picker
       :default-value="value ? moment(value, dateFormat) : null"
       :format="dateFormat"
