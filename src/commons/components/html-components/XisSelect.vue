@@ -3,7 +3,13 @@
     <xis-translator :text="label" />
     <a-select
       :mode="mode"
-      v-model="selected"
+      v-decorator="[
+        name,
+        {
+          rules: validationRules,
+          initialValue: selected
+        }
+      ]"
       :placeholder="_XisT('Please select')"
       style="width: 100%"
       :size="'large'"
@@ -71,12 +77,31 @@ export default {
       }
     }
   },
+  computed: {
+    validationRules () {
+      let rules = [];
+
+      if (this.required) {
+        rules.push({ required: true, message: this._XisT('Required.field') });
+      }
+
+      return rules;
+    }
+  },
   methods: {
     handleChange (value) {
       this.$emit('change', this.name, value);
     },
     loadOptions () {
-      this.$axios.get(this.apiUrl).then( ({data}) => {
+      console.log('Carregando opcoes');
+      console.log(this.$route.params);
+
+      let params = {
+        limiters: (this.$route.params.ids ? this.$route.params.ids : null)
+      };
+      this.$axios.get(this.apiUrl, {
+        params: params
+      }).then( ({data}) => {
         this.selectOptions = data;
 
         if (data.length <= 10) {
@@ -85,6 +110,8 @@ export default {
 
         if (this.defaultValue) {
           this.selected = JSON.parse(JSON.stringify(this.defaultValue));
+        } else if (data.length == 1) {
+          this.selected = data[0].id;
         }
       })
     }

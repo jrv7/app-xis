@@ -38,6 +38,9 @@ export default {
     }
   },
   methods: {
+    openModal () {
+      this.visible = true;
+    },
     handleOk(e) {
       this.confirmLoading = true;
       this.$emit('go-for-ok');

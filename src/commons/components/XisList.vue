@@ -8,6 +8,17 @@
       :blueprints="dbBlueprints"
       @set="fetchData"
     ></xis-list-advanced-filters>
+
+    <xis-modal
+      ref="listSingleAddModal"
+      :title="'modal_add_new_' + dbBlueprints.db.name"
+      v-model="showListAddModal"
+    >
+      <xis-form
+        :blueprints="dbBlueprints"
+      ></xis-form>
+    </xis-modal>
+
     <div
       class="xis-list"
       v-if="data"
@@ -17,8 +28,14 @@
           class="list-row detail-row"
           v-if="showDetailedHeader"
         >
-          <div class="list-col" :style="{'width': '100%', 'display': 'flex', 'display': 'block'}">
-            <xis-translator :text="'table_name.' + dbBlueprints.db.name"></xis-translator>
+          <div class="list-col" :style="{'width': '100%', 'display': 'flex', 'justify-content': 'space-between'}">
+            <xis-translator :text="'table_name.' + dbBlueprints.db.name" :style="{'margin': 'auto 0'}"></xis-translator>
+            <a-button
+              type="danger"
+              @click="showAddModal"
+            >
+              <xis-translator :text="'modal_add_new_' + dbBlueprints.db.name" />
+            </a-button>
           </div>
         </div>
         <div
@@ -170,10 +187,19 @@ import XisListActions from './list-components/XisListActions.vue';
 import XisListPaginator from './list-components/XisListPaginator.vue';
 import XisListAdvancedFilters from './list-components/XisListAdvancedFilters.vue';
 import XisListOrderer from './list-components/XisListOrderer.vue';
+import XisModal from '@/commons/components/XisModal';
+import XisForm from '@/commons/components/html-components/XisForm';
 
 export default {
   name: 'XisList',
-  components: { XisListActions, XisListPaginator, XisListAdvancedFilters, XisListOrderer },
+  components: {
+    XisListActions,
+    XisListPaginator,
+    XisListAdvancedFilters,
+    XisListOrderer,
+    XisModal,
+    XisForm
+  },
   props: {
     byTable: {
       type: Boolean,
@@ -217,7 +243,8 @@ export default {
       loading: false,
       data: [],
       cols: [],
-      showAdvancedFilters: false
+      showAdvancedFilters: false,
+      showListAddModal: true
     }
   },
   watch: {
@@ -285,6 +312,10 @@ export default {
     }
   },
   methods: {
+    showAddModal () {
+      console.log('Mostrando o modal');
+      this.$refs.listSingleAddModal.openModal();
+    },
     openAdvancedFilters () {
       this.showAdvancedFilters = true;
     },
@@ -356,7 +387,6 @@ export default {
           this.fetchData();
         });
     }
-    // this.openAdvancedFilters();
   }
 }
 </script>

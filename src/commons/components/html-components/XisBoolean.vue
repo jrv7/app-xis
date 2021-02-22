@@ -2,6 +2,7 @@
   <a-form-item>
     <xis-translator :text="label" />
     <a-radio-group
+      v-if="form"
       v-decorator="[
         name,
         {
@@ -25,6 +26,26 @@
         {{_XisT('No')}}
       </a-radio-button>
     </a-radio-group>
+
+    <a-radio-group
+      v-else
+      v-model="selected"
+      @change="onChange"
+      :disabled="readonly || disabled"
+    >
+      <a-radio-button
+        :value="null"
+        v-if="hasIrrelevant"
+      >
+        Irrelevant
+      </a-radio-button>
+      <a-radio-button :value="true">
+        {{_XisT('Yes')}}
+      </a-radio-button>
+      <a-radio-button :value="false">
+        {{_XisT('No')}}
+      </a-radio-button>
+    </a-radio-group>
   </a-form-item>
 </template>
 
@@ -32,6 +53,7 @@
 export default {
   name: 'XisBoolean',
   props: {
+    form: {},
     value: {
       default: null
     },

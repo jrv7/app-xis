@@ -7,18 +7,20 @@
       :text="label"
     />
     <a-input
-      v-decorator="[
-        name,
-        {
-          rules: validationRules,
-          initialValue: value
-        }
-      ]"
+      v-if="form"
+      v-decorator="getDecorations"
       :placeholder="placeholder"
       :type="getTypeByOption"
       :size="'large'"
-      :disabled="disabled"
-      @change="checkChanges"
+      :disabled="disabled && (!!!isHidden)"
+    />
+    <a-input
+      v-else
+      :placeholder="placeholder"
+      :type="getTypeByOption"
+      :size="'large'"
+      :disabled="disabled && (!!!isHidden)"
+      v-model="inputValue"
     >
       <a-select
         v-if="selectOption.length"
@@ -98,6 +100,19 @@ export default {
     }
   },
   computed: {
+    getDecorations () {
+      if (this.form) {
+        return [
+          this.name,
+          {
+            rules: this.validationRules,
+            initialValue: this.value
+          }
+        ];
+      } else {
+        return null;
+      }
+    },
     validationRules () {
       let rules = [];
 
@@ -147,6 +162,9 @@ export default {
   methods: {
     validateToNextPassword(rule, value, callback) {
       const form = this.form;
+
+      form.validateFields(['confirm_' + this.name], { force: true });
+
       if (value) {
         form.validateFields(['confirm_' + this.name], { force: true });
       }
@@ -154,20 +172,15 @@ export default {
     },
     compareToFirstPassword(rule, value, callback) {
       const form = this.form;
-      if (value && value !== form.getFieldValue(this.compareTo)) {
-        callback('Two passwords that you enter is inconsistent!');
+
+      if (value !== form.getFieldValue(this.compareTo)) {
+        callback(this._XisT('error_message_password_confirrmation_missmatch'));
       } else {
         callback();
       }
     },
     onSelectChange (value) {
       this.selectedOption = value;
-    },
-    checkChanges () {
-      console.log('Mudou');
-      setTimeout(() => {
-        console.log(this.form.getFieldValue('password'));
-      }, 100)
     }
   },
   mounted () {

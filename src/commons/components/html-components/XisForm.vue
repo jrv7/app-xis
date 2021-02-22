@@ -6,14 +6,16 @@
       :description="_XisT(message.error)"
       type="error"
       closable
+      :style="{'margin-bottom': '12px'}"
     />
 
 
     <xis-form-field
       v-for="(keyField, index) in keyFields" :key="'form-key-field-' + (index)"
+      :form="form"
       :field="keyField"
       :data="formData"
-      v-model="data[keyField.name]"
+      v-model="formData[keyField.name]"
     ></xis-form-field>
     
     <div
@@ -23,11 +25,14 @@
         :form="form"
         :field="field"
         :data="formData"
-        v-model="data[field.name]"
+        v-model="formData[field.name]"
         :disbaled="submiting"
         :required="(!!field.primary_key) || (!!field.not_null)"
+        :showConditionalFields="!!!hasPrimaryKeyValues"
       ></xis-form-field>
     </div>
+
+    <slot />
 
     <hr>
 
@@ -61,7 +66,7 @@ export default {
   props: {
     blueprints: {
       type: Object,
-      required: true
+      default: null
     },
     data: {
       type: Object
@@ -69,6 +74,10 @@ export default {
     showCancel: {
       type: Boolean,
       default: false
+    },
+    canSubmit: {
+      type: Boolean,
+      default: true
     }
   },
   data () {
@@ -87,11 +96,34 @@ export default {
     }
   },
   computed: {
+    hasPrimaryKeyValues () {
+      let hasValues = true;
+
+      if (this.blueprints) {
+        if (this.blueprints.db) {
+          if (this.blueprints.db.fields.length) {
+            this.blueprints.db.fields.filter(i => { return (!!i.primary_key) }).forEach(i => {
+              if (!!!this.formData[i.name]) {
+                hasValues = false;
+              }
+            });
+          } else {
+            // hasValues = false;
+          }
+        } else {
+          // hasValues = false;
+        }
+      } else {
+        // hasValues = false;
+      }
+
+      return hasValues;
+    },
     keyFields () {
       if (this.blueprints) {
         if (this.blueprints.db) {
           if (this.blueprints.db.fields.length) {
-            return this.blueprints.db.fields.filter(i => { return (!!i.primary_key) });
+            return this.blueprints.db.fields.filter(i => { return ((!!i.primary_key) && (!!!i.editable)) });
           }
         }
       }
@@ -102,7 +134,7 @@ export default {
       if (this.blueprints) {
         if (this.blueprints.db) {
           if (this.blueprints.db.fields.length) {
-            return this.blueprints.db.fields.filter(i => { return ((!!!i.primary_key) && (!!i.editable)) });
+            return this.blueprints.db.fields.filter(i => { return (!!i.editable) });
           }
         }
       }
@@ -128,57 +160,62 @@ export default {
     submitForm () {
       this.form.validateFields(err => {
         if (!err) {
-          console.log(this.formData);
-          console.log(this.form);
-          console.log(this.form.getFieldsValue());
-          this.submiting = true;
+          if (this.canSubmit) {
+            this.submiting = true;
 
-          if (!this.blueprints) return false;
+            if (!this.blueprints) return false;
 
-          const hide = this.$message.loading('Action in progress..', 0);
+            const hide = this.$message.loading('Action in progress..', 0);
 
-          let _method = (this.hasPrimaryKeyData ? 'put' : 'post');
+            let _method = (this.hasPrimaryKeyData ? 'put' : 'post');
 
-          this.$axios({
-            method: _method,
-            url: `/data/form/${this.blueprints.db.id}`,
-            data: this.form.getFieldsValue()
-          })
-            .then(({data}) => {
-              this.submiting = false;
-              setTimeout(hide, 200);
-              this.feedback(1, 'Dados ' + (_method == 'post' ? 'inseridos' : 'atualizados') + ' com sucesso!');
+            this.$axios({
+              method: _method,
+              url: `/data/form/${this.blueprints.db.id}`,
+              data: this.form.getFieldsValue()
             })
-            .catch(({response}) => {
-              Object.entries(response.data.errors).forEach(i => {
-                if (i[0]) {
-                  if (response.data.errors[i[0]]) {
-                    response.data.errors[i[0]].forEach(j => {
-                      this.formErrorMessages.push(
-                        {
-                          field: i[0],
-                          error: j
-                        }
-                      );
-                    });
+              .then(({data}) => {
+                this.formData = this.deepClone(data);
+                this.submiting = false;
+                setTimeout(hide, 200);
+                this.feedback(1, 'Dados ' + (_method == 'post' ? 'inseridos' : 'atualizados') + ' com sucesso!');
+              })
+              .catch(({response}) => {
+                Object.entries(response.data.errors).forEach(i => {
+                  if (i[0]) {
+                    if (response.data.errors[i[0]]) {
+                      response.data.errors[i[0]].forEach(j => {
+                        this.formErrorMessages.push(
+                          {
+                            field: i[0],
+                            error: j
+                          }
+                        );
+                      });
+                    }
                   }
-                }
+                });
+                setTimeout(hide, 200);
+                this.feedback(0, 'Falha ao executar ' + (_method == 'post' ? 'inserção' : 'atualização'));
+                this.submiting = false;
               });
-              setTimeout(hide, 200);
-              this.feedback(0, 'Falha ao executar ' + (_method == 'post' ? 'inserção' : 'atualização'));
-              this.submiting = false;
-            })
+          } else {
+            console.log('Devolvendo dados do formulario');
+            console.log(this.form.getFieldsValue());
+          }
         }
       });
     }
   },
-  mounted () {
+  created () {
     if (this.data) {
       console.log('Dados pro formulario: ');
       console.log(this.data);
       this.formData = this.deepClone(this.data);
       console.log(this.formData);
     }
+  },
+  mounted () {
   }
 }
 </script>
