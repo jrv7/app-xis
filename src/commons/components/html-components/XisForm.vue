@@ -1,5 +1,5 @@
 <template>
-  <a-form :form="form">
+  <a-form :form="form" :layout="layout" :style="{'width': '100%'}">
     <a-alert
       v-for="(message, index) in formErrorMessages" :key="'form-error-message-' + index"
       :message="_XisT('form_field_error_' + message.field)"
@@ -26,7 +26,7 @@
         :field="field"
         :data="formData"
         v-model="formData[field.name]"
-        :disbaled="submiting"
+        :disbaled="submiting || isSubmiting"
         :required="(!!field.primary_key) || (!!field.not_null)"
         :showConditionalFields="!!!hasPrimaryKeyValues"
       ></xis-form-field>
@@ -36,10 +36,10 @@
 
     <hr>
 
-    <div class="buttons-container">
+    <div class="buttons-container" v-if="showActions">
       <a-button
         type="default"
-        :disabled="submiting"
+        :disabled="submiting || isSubmiting"
         v-if="showCancel"
       >
         <xis-translator :text="'Cancel'"/>
@@ -47,8 +47,9 @@
       <span v-else />
 
       <a-button
+        v-if="showOk"
         type="primary"
-        :loading="submiting"
+        :loading="submiting || isSubmiting"
         @click="submitForm"
       >
         <span><xis-translator :text="'Save'"/></span>
@@ -75,10 +76,20 @@ export default {
       type: Boolean,
       default: false
     },
+    showOk: {
+      type: Boolean,
+      default: true
+    },
+    showActions: {
+      type: Boolean,
+      default: true
+    },
     canSubmit: {
       type: Boolean,
       default: true
-    }
+    },
+    layout: { type: String, default: 'vertical' },
+    'is-submiting': { type: Boolean, default: false }
   },
   data () {
     return {
@@ -162,6 +173,7 @@ export default {
         if (!err) {
           if (this.canSubmit) {
             this.submiting = true;
+            this.$emit('submiting', null);
 
             if (!this.blueprints) return false;
 
@@ -179,6 +191,8 @@ export default {
                 this.submiting = false;
                 setTimeout(hide, 200);
                 this.feedback(1, 'Dados ' + (_method == 'post' ? 'inseridos' : 'atualizados') + ' com sucesso!');
+                this.$emit('submited');
+                this.$emit('success', data);
               })
               .catch(({response}) => {
                 Object.entries(response.data.errors).forEach(i => {
@@ -198,10 +212,11 @@ export default {
                 setTimeout(hide, 200);
                 this.feedback(0, 'Falha ao executar ' + (_method == 'post' ? 'inserção' : 'atualização'));
                 this.submiting = false;
+                this.$emit('submited');
+                this.$emit('error');
               });
           } else {
-            console.log('Devolvendo dados do formulario');
-            console.log(this.form.getFieldsValue());
+            this.$emit('submiting', this.form.getFieldsValue());
           }
         }
       });
@@ -209,10 +224,7 @@ export default {
   },
   created () {
     if (this.data) {
-      console.log('Dados pro formulario: ');
-      console.log(this.data);
       this.formData = this.deepClone(this.data);
-      console.log(this.formData);
     }
   },
   mounted () {

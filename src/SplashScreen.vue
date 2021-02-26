@@ -64,6 +64,9 @@ export default {
       }, 8);
     }
   },
+  created () {
+    this.makePreparations();
+  },
   mounted () {
     this.startLoader();
     this.mountDictionary();

@@ -14,10 +14,15 @@ const mutations = {
   },
   signout(localState) {
     localState;
-    localStorage.removeItem('api_token');
-    localStorage.removeItem('xis-dictionary');
-    sessionStorage.removeItem('api_token');
-    sessionStorage.removeItem('xis-dictionary');
+
+    localStorage.clear();
+    // localStorage.removeItem('api_token');
+    // localStorage.removeItem('xis-dictionary');
+    // localStorage.removeItem('xis-dictionary');
+
+    sessionStorage.clear();
+    // sessionStorage.removeItem('api_token');
+    // sessionStorage.removeItem('xis-dictionary');
   }
 };
 

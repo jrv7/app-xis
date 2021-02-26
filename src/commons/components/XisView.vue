@@ -11,10 +11,15 @@
         <xis-form
           :blueprints="blueprints"
           :data="data"
+          @success="storeNewData"
         />
       </div>
 
-      <div class="right-pane">
+      <div
+        v-if="hasPrimaryKeyValues"
+        :key="'right-pane-key-' + (hasPrimaryKeyValues ? '1' : '0')"
+        class="right-pane"
+      >
         <div
           v-for="relatedTable in blueprints.db.related_tables.filter(i => { return (i.right_table.id != blueprints.db.id) })" :key="'related-table-block-' + relatedTable.right_table.id"
           class="vertical-block"
@@ -34,7 +39,8 @@
     </div>
 
     <div
-      v-for="mnTable in blueprints.db.many_to_many_tables" :key="'m-to-n-table-block-' + mnTable.n_table_id"
+      v-if="hasPrimaryKeyValues"
+      v-for="mnTable in blueprints.db.many_to_many_tables" :key="'m-to-n-table-block-' + mnTable.n_table_id + (hasPrimaryKeyValues ? '1' : '0')"
       class="horizontal-block"
     >
       <xis-list
@@ -74,7 +80,39 @@ export default {
   },
   data () {
     return {
-      loading: false
+      loading: false,
+      formData: null
+    }
+  },
+  computed: {
+    hasPrimaryKeyValues () {
+      let hasValues = true;
+
+      if (this.blueprints) {
+        if (this.blueprints.db) {
+          if (this.blueprints.db.fields.length) {
+            this.blueprints.db.fields.filter(i => { return (!!i.primary_key) }).forEach(i => {
+              if (!!!this.formData[i.name]) {
+                hasValues = false;
+              }
+            });
+          }
+        }
+      }
+
+      return hasValues;
+    },
+  },
+  methods: {
+    storeNewData (data) {
+      console.log('Inserido');
+      console.log(data);
+      this.formData = data;
+    }
+  },
+  created () {
+    if (this.data) {
+      this.formData = this.deepClone(this.data);
     }
   },
   mounted () {

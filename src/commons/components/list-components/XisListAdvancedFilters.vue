@@ -2,7 +2,7 @@
   <xis-modal
     ref="advFilterModal"
     v-model="visible"
-    @go-for-ok="applyAdvancedSearch"
+    @modal-confirmed="applyAdvancedSearch"
     title="Advanced search"
   >
     <xis-input
@@ -96,11 +96,15 @@ export default {
     },
     applyAdvancedSearch () {
       let vm = this;
+
+      this.$refs.advFilterModal.startLoading();
+      
       vm.$store.commit('setAdvancedFilters', {submenuId: this.$route.params.submenuId, filters: this.filters});
 
       setTimeout(() => {
         vm.$emit('set');
         vm.$refs.advFilterModal.unsetLoading();
+        this.$refs.advFilterModal.endLoading()
       }, 2000);
     },
     addNewFieldSearch (value) {

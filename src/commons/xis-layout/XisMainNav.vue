@@ -25,7 +25,7 @@
         </a-breadcrumb>
       </div>
 
-      <div
+      <!-- <div
         v-if="blueprints && activeMenu"
       >
         <router-link
@@ -37,7 +37,7 @@
         >
           <xis-translator :text="'New'" /> <xis-translator :text="'table_name_single.' + action.target_menu.menu_title" />
         </router-link>
-      </div>
+      </div> -->
     </div>
     <div class="xis-default-page-size">
       <slot />
@@ -62,15 +62,14 @@ export default {
   },
   computed: {
     getMenuMap () {
-      let activeMenuHash = this.$route.params.submenuId || this.$store.getters.getSelectedMenu;
       let mainMenu = null;
       let fatherMenu = null;
       let activeMenu = null;
 
-      this.menuMap.forEach(mMenu => {
+      this._XIS_Menu_Tree.forEach(mMenu => {
         mMenu.children.forEach(fMenu => {
           fMenu.children.forEach(aMenu => {
-            if (String(aMenu.menu_url_hash) == String(activeMenuHash)) {
+            if (String(aMenu.menu_url_hash) == String(this._XIS_Current_Menu_Hash)) {
               mainMenu = this.deepClone(mMenu);
               fatherMenu = this.deepClone(fMenu);
               activeMenu = this.deepClone(aMenu);
@@ -97,9 +96,6 @@ export default {
         ids: '-0:0-'
       }
 
-      console.log('Parametros do botao');
-      console.log(params);
-
       return params;
     },
     routeName (action) {
@@ -112,8 +108,6 @@ export default {
   },
   mounted () {
     setTimeout(() => {
-      this.menuMap = this.deepClone(this.$store.getters.getStoredMainMenus);
-      console.log(this.menuMap);
       this.lastAccessedMenu = this.deepClone(this.$store.getters.getLastAccessedMenu);
     }, 400)
   }
@@ -126,7 +120,7 @@ export default {
     top: 0;
     right: 0;
     bottom: 0;
-    left: 240px;
+    left: 0;
     display: flex;
     flex-flow: wrap;
     flex-direction: column;

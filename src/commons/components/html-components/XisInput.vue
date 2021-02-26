@@ -9,17 +9,18 @@
     <a-input
       v-if="form"
       v-decorator="getDecorations"
-      :placeholder="placeholder"
+      :placeholder="_XisT(placeholder)"
       :type="getTypeByOption"
       :size="'large'"
       :disabled="disabled && (!!!isHidden)"
     />
     <a-input
       v-else
-      :placeholder="placeholder"
+      :placeholder="_XisT(placeholder)"
       :type="getTypeByOption"
       :size="'large'"
-      :disabled="disabled && (!!!isHidden)"
+      :disabled="(disabled || readonly) && (!!!isHidden)"
+      :class="{'is-readonly': readonly}"
       v-model="inputValue"
     >
       <a-select
@@ -64,6 +65,7 @@ export default {
     type: { type: String, default: 'text' },
     placeholder: {},
     disabled: { type: Boolean, default: false },
+    readonly: { type: Boolean, default: false },
     required: { type: Boolean, default: false },
     'is-email': { type: Boolean, default: false },
     'is-hidden': { type: Boolean, default: false },
@@ -217,5 +219,10 @@ export default {
 
 .is-hidden {
   margin-bottom: 0;
+}
+
+.is-readonly {
+  background-color: #fff !important;
+  color: #999 !important;
 }
 </style>

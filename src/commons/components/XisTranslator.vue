@@ -1,5 +1,8 @@
 <template>
-  <div class="xis-translator">
+  <div
+    class="xis-translator"
+    :key="'xis-translator-' + _XIS_Language"
+  >
     <span
       v-if="!hasTranslation"
       @dblclick="onTranslate"
@@ -70,6 +73,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
+
 export default {
   name: 'XisTranslator',
   props: {
@@ -81,8 +86,6 @@ export default {
   data () {
     return {
       dictionary: null,
-      translated: null,
-      hasTranslation: false,
       showTranslator: false,
       languages: [],
       languageTableId: 36,
@@ -91,6 +94,29 @@ export default {
       translatedText: null,
       isLoading: false
     }
+  },
+  computed: {
+    ...mapState(['xisStateLanguage', 'xisStateDictionary']),
+    _XIS_Language () { return this.xisStateLanguage; },
+    _XIS_Dictionary () { return this.xisStateDictionary; },
+    hasTranslation () {
+      return (this._XIS_Dictionary.findIndex(
+        item => String(item.word) == String(this.text)
+      ) >= 0);
+    },
+    translated () {
+      let translated = this._XIS_Dictionary.findIndex(
+        item => String(item.word) == String(this.text)
+      );
+
+      if (translated >= 0) {
+        return this._XIS_Dictionary[translated].translation;
+      } else {
+        this.$store.commit('storeUntranslatedWord', this.text);
+      }
+
+      return this.text;
+    },
   },
   methods: {
     saveTranslation () {
@@ -133,20 +159,7 @@ export default {
     }
   },
   mounted () {
-      if (this.dictionary == null) {
-        this.dictionary = JSON.parse(this.$store.getters.getDictionary);
-      }
-
-      let translated = this.dictionary.findIndex(
-        item => String(item.word) == String(this.text)
-      );
-
-      if (translated >= 0) {
-        this.hasTranslation = true;
-        this.translated = this.dictionary[translated].translation;
-      } else {
-        this.translated = this.text;
-      }
+    this.selectedLanguage = this._XIS_Language;
   }
 }
 </script>

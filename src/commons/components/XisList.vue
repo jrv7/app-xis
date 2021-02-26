@@ -3,21 +3,27 @@
     id="XisList"
     v-if="dbBlueprints != null"
   >
-    <xis-list-advanced-filters
-      v-model="showAdvancedFilters"
-      :blueprints="dbBlueprints"
-      @set="fetchData"
-    ></xis-list-advanced-filters>
-
     <xis-modal
       ref="listSingleAddModal"
       :title="'modal_add_new_' + dbBlueprints.db.name"
+      @modal-confirmed="confirmModalInsert"
       v-model="showListAddModal"
     >
       <xis-form
+        ref="XisFormInlineInsert"
         :blueprints="dbBlueprints"
+        :show-actions="false"
+        @submiting="$refs.listSingleAddModal.startLoading()"
+        @submited="$refs.listSingleAddModal.endLoading()"
+        @success="onModalInsertSuccess"
       ></xis-form>
     </xis-modal>
+
+    <xis-list-actions-bar
+      :blueprints="dbBlueprints"
+      :route-limiters="routeLimiters"
+      @filters-set="fetchData"
+    />
 
     <div
       class="xis-list"
@@ -69,14 +75,8 @@
             
           </div>
 
-          <div class="list-col left-border" :style="{'width': (actionColWidth + 'px'), 'margin-left': 'auto', 'display': 'flex'}">
-            <button
-              @click.prevent="openAdvancedFilters"
-              class="btn btn-sm btn-link no-outline"
-              :style="{'display': 'flex'}"
-            >
-              <font-awesome-icon :icon="['fas', 'filter']" style="margin: auto; margin-top: 4px !important" /> <xis-translator :text="'Filters'" style="margin: auto" />
-            </button>
+          <div class="list-col left-border" :style="{'width': (actionColWidth + 'px'), 'margin-left': 'auto', 'display': 'flex', 'justify-content': 'space-between'}">
+            <span :style="{'color': '#666', 'font-size': '.94rem'}"><xis-translator :text="'WORD.ACTIONS'" /></span>
           </div>
         </div>
       </div>
@@ -84,10 +84,6 @@
       <div
         v-if="loading"
         class="list-body"
-        :style="{
-          'max-height': 'calc(' + height + 'vh - 238px)',
-          'min-height': 'calc(' + height + 'vh - 238px)'
-        }"
       >
         <div
           class="list-row"
@@ -102,10 +98,6 @@
       <div
         v-else-if="totalResults > 0"
         class="list-body"
-        :style="{
-          'max-height': 'calc(' + height + 'vh - 238px)',
-          'min-height': 'calc(' + height + 'vh - 238px)'
-        }"
       >
         <div
           class="list-row"
@@ -127,9 +119,19 @@
               trigger="click"
             >
               <template slot="title">
-                <span>{{getDataValueByColumn(row, col)}}</span>
+                <span :style="{'display': 'flex'}">
+                  <span :style="{'margin': 'auto 0'}">
+                    <xis-translator :text="getDataValueByColumn(row, col)" />
+                  </span>
+                </span>
               </template>
-              <span>{{getDataValueByColumn(row, col)}}</span>
+              <span v-if="!col.translate_in_lists">{{getDataValueByColumn(row, col)}}</span>
+              <span v-else :style="{'display': 'flex'}">
+                <span :style="{'margin': 'auto 4px auto 0', 'font-size': '14pt', 'color': '#ddd'}">
+                  <font-awesome-icon :icon="['fas', 'language']" />
+                </span>
+                <span>{{getDataValueByColumn(row, col)}}</span>
+              </span>
             </a-tooltip>
           </div>
 
@@ -147,15 +149,17 @@
         v-else
         class="list-body"
         :style="{
-          'max-height': 'calc(' + height + 'vh - 238px)',
-          'min-height': 'calc(' + height + 'vh - 238px)'
+          'max-height': 'calc(' + height + 'vh - 268px)',
+          'min-height': 'calc(' + height + 'vh - 268px)'
         }"
       >
         <div
           class="list-row"
         >
           <div class="list-col" style="width: 100%;">
-            <span>{{_XisT('Nothing to show')}}</span>
+            <span>
+              <xis-translator :text="'WORD.NOTHING_TO_SHOW'" />
+            </span>
           </div>
         </div>
       </div>
@@ -183,9 +187,9 @@
 
 <script>
 
+import XisListActionsBar from './list-components/XisListActionsBar.vue';
 import XisListActions from './list-components/XisListActions.vue';
 import XisListPaginator from './list-components/XisListPaginator.vue';
-import XisListAdvancedFilters from './list-components/XisListAdvancedFilters.vue';
 import XisListOrderer from './list-components/XisListOrderer.vue';
 import XisModal from '@/commons/components/XisModal';
 import XisForm from '@/commons/components/html-components/XisForm';
@@ -193,9 +197,9 @@ import XisForm from '@/commons/components/html-components/XisForm';
 export default {
   name: 'XisList',
   components: {
+    XisListActionsBar,
     XisListActions,
     XisListPaginator,
-    XisListAdvancedFilters,
     XisListOrderer,
     XisModal,
     XisForm
@@ -241,6 +245,7 @@ export default {
       totalResults: 0,
       totalPages: 0,
       loading: false,
+      downloading: false,
       data: [],
       cols: [],
       showAdvancedFilters: false,
@@ -268,7 +273,7 @@ export default {
       const actionsColWidth = this.actionColWidth;
       const countCols = this.dbBlueprints.db.fields.filter(col => {
         if (this.simpleColumns) {
-          return ((!!!col.primary_key) && col.display_in_lists && (!!col.not_null))
+          return ((!!!col.primary_key) || (col.display_in_lists && (!!col.not_null)))
         }
 
         return col.display_in_lists
@@ -276,7 +281,7 @@ export default {
 
       this.dbBlueprints.db.fields.filter(col => {
         if (this.simpleColumns) {
-          return ((!!!col.primary_key) && col.display_in_lists && (!!col.not_null))
+          return ((!!!col.primary_key) || (col.display_in_lists && (!!col.not_null)))
         }
 
         return col.display_in_lists
@@ -289,14 +294,14 @@ export default {
 
       let returnedColumns = this.dbBlueprints.db.fields.filter(col => {
         if (this.simpleColumns) {
-          return ((!!!col.primary_key) && col.display_in_lists && (!!col.not_null))
+          return ((!!!col.primary_key) || (col.display_in_lists && (!!col.not_null)))
         }
 
         return col.display_in_lists
       }).map(col => {
         if (col.width) {
           col.width = col.width + 'px';
-        } else if (col.primary_key) {
+        } else if (col.primary_key && (!!!col.editable)) {
           col.width = '40px';
         } else {
           col.width = 'calc(((100% - ' + totalSetWidth + 'px) - ' + (actionsColWidth / (countCols - countColsWithWidth)) + 'px) / ' + (countCols - countColsWithWidth) + ')'
@@ -312,8 +317,14 @@ export default {
     }
   },
   methods: {
+    onModalInsertSuccess () {
+      this.fetchData();
+      this.showListAddModal = false;
+    },
+    confirmModalInsert () {
+      this.$refs.XisFormInlineInsert.submitForm();
+    },
     showAddModal () {
-      console.log('Mostrando o modal');
       this.$refs.listSingleAddModal.openModal();
     },
     openAdvancedFilters () {
@@ -399,13 +410,16 @@ export default {
     padding: 0;
     margin: 0;
     font-size: .8rem;
-    border: 1px solid #ddd;
-    box-shadow: 0 4px 14px #0002;
+    border: none;
+    background: none;
 
     .xis-list {
       position: relative;
       display: flex;
       flex-flow: wrap;
+      border: 1px solid #ddd;
+      // box-shadow: 0 4px 14px #0002;
+      // border-radius: 12px;
 
       &>.list-header {
         position: inherit;
@@ -413,11 +427,19 @@ export default {
         flex-flow: wrap;
         width: 100%;
         overflow-y: scroll;
+        background-color: #fff;
         overflow-x: hidden;
+        // border-radius: 12px 12px 0 0;
+
+        &::-webkit-scrollbar {
+          background: none;
+          border: none;
+          width: 8px;
+        }
 
         &>.list-row {
-          background-color: #fff;
           border: none;
+          // border-radius: 12px;
 
           &:last-of-type {
             border-bottom: 1px solid #ccc;
@@ -447,14 +469,34 @@ export default {
         display: flex;
         flex-flow: nowrap;
         width: 100%;
-        overflow-y: scroll;
+        // overflow-y: scroll;
         overflow-x: hidden;
         flex-direction: column;
-        background-color: #fafafa;
+        // background-color: #efefef;
+        // border-radius: 0 0 12px 12px;
+
+        &::-webkit-scrollbar {
+          background-color: #efefef;
+          // border-radius: 0 0 12px 0;
+          width: 8px;
+        }
+        &::-webkit-scrollbar-track {
+          // border-radius: 0 0 12px 0;
+          box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+        }
+        &::-webkit-scrollbar-thumb {
+          background-color: darkgrey;
+          // outline: 1px solid slategrey;
+          // border-radius: 12px;
+        }
 
         &>.list-row {
-          background-color: #ffffff;
           border-bottom: 1px solid #f0f0f0;
+          background-color: #fafafa;
+
+          &:first-of-type {
+            // border-radius: 0 0 12px 12px;
+          }
 
           >.list-col {
             line-height: 48px;

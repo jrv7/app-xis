@@ -4,6 +4,8 @@
     :width="width + 'vw'"
     :visible="visible"
     :confirm-loading="confirmLoading"
+    :maskClosable="false"
+    :destroyOnClose="true"
     @ok="handleOk"
     @cancel="handleCancel"
   >
@@ -26,7 +28,8 @@ export default {
   data () {
     return {
       visible: false,
-      confirmLoading: false
+      confirmLoading: false,
+      loadingTimer: null
     }
   },
   watch: {
@@ -35,19 +38,41 @@ export default {
     },
     visible (newValue) {
       this.$emit('input', newValue);
+    },
+    confirmLoading (newValue) {
+      if (!!!newValue) {
+        if (this.loadingTimer != null) {
+          clearTimeout(this.loadingTimer);
+        }
+      } else {
+        if (this.loadingTimer != null) {
+          clearTimeout(this.loadingTimer);
+          this.loadingTimer = setTimeout(() => {
+            this.confirmLoading = true;
+          }, 10000);
+        }
+      }
     }
   },
   methods: {
     openModal () {
       this.visible = true;
     },
-    handleOk(e) {
+    startLoading () {
       this.confirmLoading = true;
-      this.$emit('go-for-ok');
+      this.loadingTimer = setTimeout(() => {
+        this.confirmLoading = true;
+      }, 10000);
+    },
+    endLoading () {
+      this.confirmLoading = false;
+    },
+    handleOk(e) {
+      this.$emit('modal-confirmed');
     },
     handleCancel(e) {
       this.visible = false;
-      this.$emit('go-for-cancel', this.visible);
+      this.$emit('modal-canceled', this.visible);
     },
     unsetLoading () {
       this.confirmLoading = false;

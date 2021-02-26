@@ -32,23 +32,8 @@ router.beforeEach((to, from, next) => {
   } else if (to.name === "Login" && isAuthenticated) {
     next({ name: 'Dashboard' })
   } else {
-    sessionStorage.setItem("accessed-main-menu", to.params.mainMenuId);
-    sessionStorage.setItem("accessed-menu", to.params.submenuId);
-
-    if (from) {
-      if (from.name) {
-        if (from.params) {
-          if (from.params.mainMenuId) {
-            if (from.params.submenuId) {
-              sessionStorage.setItem("last-accessed-main-menu-hash", from.params.mainMenuId);
-              sessionStorage.setItem("last-accessed-menu-hash", from.params.submenuId);
-              sessionStorage.setItem("last-accessed-menu-name", from.name);
-              sessionStorage.setItem("last-accessed-menu-ids", (from.params.ids || '-0:0-'));
-            }
-          }
-        }
-      }
-    }
+    sessionStorage.setItem("current-menu", JSON.stringify(to.params));
+    sessionStorage.setItem("last-menu", JSON.stringify(from.params));
 
     next();
   }

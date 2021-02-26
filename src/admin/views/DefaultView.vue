@@ -15,6 +15,7 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
 import XisLayout from '@/commons/XisLayout';
 import XisLoader from '@/commons/assets/XisLoader.vue'
 import XisList from '@/commons/components/XisList';
@@ -29,8 +30,14 @@ export default {
       blueprints: null
     }
   },
+  computed: {
+    ...mapState(['xisStateCurrentMenu'])
+  },
   methods: {
     Reload () {
+      console.log('Reloading Lista');
+      console.log(this._XIS_Current_Menu);
+
       this.blueprints = null;
       this.loading = true;
       this.accessedMenu = this.$store.state.accessedMenu;
@@ -43,8 +50,7 @@ export default {
   },
   mounted () {
     this.loading = true;
-    this.accessedMenu = this.$store.getters.getSelectedMenu;
-    this.getBlueprints(this.accessedMenu)
+    this.getBlueprints(this._XIS_Current_Menu_Hash)
       .then( ({data}) => {
         this.blueprints = data;
         this.loading = false;

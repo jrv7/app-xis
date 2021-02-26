@@ -2,6 +2,7 @@
   <a-form-item>
     <xis-translator :text="label" />
     <a-select
+      v-if="form"
       :mode="mode"
       v-decorator="[
         name,
@@ -13,11 +14,38 @@
       :placeholder="_XisT('Please select')"
       style="width: 100%"
       :size="'large'"
-      :disabled="disabled"
+      :virtual="false"
+      :defaultActiveFirstOption="false"
+      :autoClearSearchValue="false"
       @change="handleChange"
     >
       <a-select-option
-        :value="null"
+        :value="0"
+      >
+        {{_XisT('Select...')}}
+      </a-select-option>
+      <a-select-option
+        v-for="(option, index) in selectOptions" :key="'select-' + name + '-option-' + index"
+        :value="option.id || option"
+      >
+        {{useTranslation ? _XisT(option.value || option) : (option.value || option)}}
+      </a-select-option>
+    </a-select>
+
+    <a-select
+      v-else
+      :mode="mode"
+      v-model="selected"
+      :placeholder="_XisT('Please select')"
+      style="width: 100%"
+      :size="'large'"
+      :virtual="false"
+      :defaultActiveFirstOption="false"
+      :autoClearSearchValue="false"
+      @change="handleChange"
+    >
+      <a-select-option
+        :value="0"
       >
         {{_XisT('Select...')}}
       </a-select-option>
@@ -35,6 +63,7 @@
 export default {
   name: 'XisSelect',
   props: {
+    form: {},
     value: {},
     defaultValue: {},
     name: {
@@ -43,7 +72,7 @@ export default {
     },
     mode: {
       type: String,
-      default: 'single'
+      default: null
     },
     options: {
       type: Array,
@@ -55,10 +84,7 @@ export default {
       default: false
     },
     apiUrl: {
-      type: String,
-      required: () => {
-        return !!this.apiMode;
-      }
+      type: String
     },
     disabled: { type: Boolean, default: false }
   },
@@ -93,9 +119,6 @@ export default {
       this.$emit('change', this.name, value);
     },
     loadOptions () {
-      console.log('Carregando opcoes');
-      console.log(this.$route.params);
-
       let params = {
         limiters: (this.$route.params.ids ? this.$route.params.ids : null)
       };
@@ -140,14 +163,4 @@ export default {
 
 <style lang="scss">
 
-
-.ant-form-item {
-  .ant-select {
-    .ant-select-selection {
-      // background-color: #0004;
-      // border-color: #000a;
-      // color: #ccc;
-    }
-  }
-}
 </style>

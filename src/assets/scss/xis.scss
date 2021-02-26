@@ -12,6 +12,34 @@ $body-color: #111;
     flex-direction: column;
 }
 
+.ant-btn-primary {
+    background-color: #222d32 !important;
+    border-color: #1a2226 !important;
+    box-shadow: 0 0 3px #fff4 !important;
+    color: #c7c7c7 !important;
+
+    &:hover {
+        background-color: #29363b !important;
+        box-shadow: 0 0 3px #fff8 !important;
+    }
+}
+
+.ant-btn-secondary {
+    background-color: #3c8dbc !important;
+    border-color: #4d626d !important;
+    // box-shadow: 0 0 3px #5493b8 !important;
+    color: #c7c7c7 !important;
+
+    &:hover {
+        background-color: #4b99c7 !important;
+        box-shadow: 0 0 3px #fff8 !important;
+    }
+}
+
+.anticon {
+  vertical-align: 0rem !important;
+}
+
 // Then import Bootstrap an BootstrapVue SCSS files (order is important)
 @import 'node_modules/bootstrap/scss/bootstrap.scss';
 @import 'node_modules/bootstrap-vue/src/index.scss';
