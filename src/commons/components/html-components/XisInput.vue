@@ -1,11 +1,15 @@
 <template>
   <a-form-item
     :class="{'is-hidden': (!!isHidden)}"
+    :label-col="formItemLayout.labelCol"
+    :wrapper-col="formItemLayout.wrapperCol"
   >
-    <xis-translator
-      v-show="(label != null) && (!!!isHidden)"
-      :text="label"
-    />
+    <template
+      slot="label"
+      v-if="!!!isHidden"
+    >
+      {{_XisT(label)}}
+    </template>
     <a-input
       v-if="form"
       v-decorator="getDecorations"
@@ -67,6 +71,7 @@ export default {
     disabled: { type: Boolean, default: false },
     readonly: { type: Boolean, default: false },
     required: { type: Boolean, default: false },
+    formLayout: { type: String, default: 'horizontal' },
     'is-email': { type: Boolean, default: false },
     'is-hidden': { type: Boolean, default: false },
     'is-password': { type: Boolean, default: false },
@@ -102,6 +107,17 @@ export default {
     }
   },
   computed: {
+    formItemLayout() {
+      const { formLayout } = this;
+      console.log('Input style:');
+      console.log(formLayout);
+      return formLayout === 'horizontal'
+        ? {
+            labelCol: { span: 7 },
+            wrapperCol: { span: 16, offset: 1 },
+          }
+        : {};
+    },
     getDecorations () {
       if (this.form) {
         return [
@@ -214,6 +230,7 @@ export default {
   input {
     // background-color: #0004;
     // border-color: #000a;
+    // box-shadow: 0 0 6px #dddf;
   }
 }
 

@@ -1,77 +1,166 @@
 <template>
-  <div
-    id="XisView"
-  >
-    <div class="horizontal-block">
-      <div class="left-pane">
-        <h3><xis-translator :text="'table_name_singular.' + blueprints.db.name"></xis-translator></h3>
-        
-        <hr>
+  <div id="XisView">
+    <a-row :gutter="16">
+      <a-col :span="12">
+        <div class="data-block main-data-block">
+          <xis-view-flex-line :span="24">
+            <h4 class="">
+              <xis-translator :text="'table_name_singular.' + blueprints.db.name" />
+            </h4>
+            <a-button
+              type="default"
+              @click="openEditModal"
+            >Editar</a-button>
+          </xis-view-flex-line>
 
-        <xis-form
-          :blueprints="blueprints"
-          :data="data"
-          @success="storeNewData"
-        />
-      </div>
+          <xis-view-line :span="24"><hr></xis-view-line>
 
-      <div
-        v-if="hasPrimaryKeyValues"
-        :key="'right-pane-key-' + (hasPrimaryKeyValues ? '1' : '0')"
-        class="right-pane"
-      >
+          <xis-view-line
+            v-for="field in getMainStringFields" :key="'line-text-' + field.id"
+            :span="24"
+            :type="field.type.name"
+            :label="_XisT(field.table.name + '.' + field.name)"
+            :text="getDataValue(field)"
+            :highlight="1"
+          />
+
+          <xis-view-line
+            v-for="field in getMainForeignFields" :key="'line-text-' + field.id"
+            :span="12"
+            :type="field.type.name"
+            :label="_XisT(field.table.name + '.' + field.name)"
+            :text="getDataValue(field)"
+            :highlight="2"
+          />
+
+          <xis-view-line :span="24" /><xis-view-line :span="24" />
+
+          <xis-view-line
+            v-for="field in getPrimaryBooleanFields" :key="'line-text-' + field.id"
+            :span="4"
+            :type="field.type.name"
+            :label="_XisT(field.table.name + '.' + field.name)"
+            :text="getDataValue(field)"
+          />
+
+          <xis-view-line
+            v-for="field in getSecondaryBooleanFields" :key="'line-text-' + field.id"
+            :span="4"
+            :type="field.type.name"
+            :label="_XisT(field.table.name + '.' + field.name)"
+            :text="getDataValue(field)"
+          />
+
+          <xis-view-line :span="24" /><xis-view-line :span="24" />
+
+          <xis-view-line
+            v-for="field in getSecondaryStringFields" :key="'line-text-' + field.id"
+            :span="8"
+            :type="field.type.name"
+            :label="_XisT(field.table.name + '.' + field.name)"
+            :text="getDataValue(field)"
+          />
+
+          <xis-view-line
+            v-for="field in getSecondaryNumericFields" :key="'line-text-' + field.id"
+            :span="8"
+            :type="field.type.name"
+            :label="_XisT(field.table.name + '.' + field.name)"
+            :text="getDataValue(field)"
+          />
+        </div>
+
         <div
-          v-for="relatedTable in blueprints.db.related_tables.filter(i => { return (i.right_table.id != blueprints.db.id) })" :key="'related-table-block-' + relatedTable.right_table.id"
-          class="vertical-block"
+          v-for="mmTable in blueprints.db.many_to_many_tables" :key="'m-m-table-block-' + mmTable.n_table.id"
+          class="data-block second-data-block no-padding"
         >
+          <xis-view-flex-line :span="24" :style="{'padding': '12px'}">
+            <h4 class="">
+              <xis-translator :text="'table_name.' + mmTable.n_table.name" />
+            </h4>
+
+            <a-button
+              :icon="showMtoMtables ? 'up' : 'down'"
+              type="link"
+              @click="showMtoMtables = !showMtoMtables"
+            />
+          </xis-view-flex-line>
+
           <xis-list
+            v-show="showMtoMtables"
             :byTable="true"
-            :table="relatedTable.right_table.id"
-            :height="93"
-            :default-per-page="20"
+            :table="mmTable.pivot_table.id"
             :simple-columns="true"
             :route-limiters="$route.params.ids"
-            :class="['bordered']"
-            :show-detailed-header="true"
+            no-borders
+            no-headers
           ></xis-list>
         </div>
-      </div>
-    </div>
+      </a-col>
 
-    <div
-      v-if="hasPrimaryKeyValues"
-      v-for="mnTable in blueprints.db.many_to_many_tables" :key="'m-to-n-table-block-' + mnTable.n_table_id + (hasPrimaryKeyValues ? '1' : '0')"
-      class="horizontal-block"
+      <a-col :span="12">
+        <div
+          v-if="hasPrimaryKeyValues"
+          class="right-pane"
+        >
+          <div
+            v-for="relatedTable in blueprints.db.related_tables.filter(i => { return (i.right_table.id != blueprints.db.id) })" :key="'related-table-block-' + relatedTable.right_table.id"
+            class="vertical-block"
+          >
+            <xis-list
+              :byTable="true"
+              :table="relatedTable.right_table.id"
+              :height="93"
+              :default-per-page="20"
+              :simple-columns="true"
+              :route-limiters="$route.params.ids"
+              :class="['bordered']"
+              :show-detailed-header="true"
+            ></xis-list>
+          </div>
+        </div>
+      </a-col>
+    </a-row>
+
+    <xis-modal
+      ref="listSingleAddModal"
+      :title="'modal_add_new_' + blueprints.db.name"
+      @modal-confirmed="confirmModalInsert"
+      v-model="showEditModal"
     >
-      <xis-list
-        :byTable="true"
-        :table="mnTable.pivot_table.id"
-        :height="40"
-        :default-per-page="20"
-        :simple-columns="true"
-        :route-limiters="$route.params.ids"
-        :class="['bordered']"
-        :show-detailed-header="true"
-      ></xis-list>
-    </div>
+      <xis-form
+        ref="XisFormInlineInsert"
+        :blueprints="blueprints"
+        :show-actions="false"
+        :data="data"
+        @submiting="$refs.listSingleAddModal.endLoading()"
+        @submited="$refs.listSingleAddModal.endLoading(); showEditModal = false"
+        @success="onModalEditSuccess"
+      ></xis-form>
+    </xis-modal>
   </div>
 </template>
 
 <script>
-import XisForm from '@/commons/components/html-components/XisForm.vue';
+import XisViewLine from './view-components/XisViewLine';
+import XisViewFlexLine from './view-components/XisViewFlexLine';
 import XisList from '@/commons/components/XisList.vue';
+import XisModal from '@/commons/components/XisModal';
+import XisForm from '@/commons/components/html-components/XisForm';
 
 export default {
   name: 'XisView',
-  components: { XisForm, XisList },
+  components: {
+    XisViewLine,
+    XisViewFlexLine,
+    XisList,
+    XisModal,
+    XisForm,
+  },
   props: {
     blueprints: {
       type: Object,
       required: true
-    },
-    height: {
-      type: Number,
-      default: 600
     },
     data: {
       type: Object,
@@ -80,11 +169,30 @@ export default {
   },
   data () {
     return {
-      loading: false,
-      formData: null
+      formData: null,
+      showEditModal: false,
+      showMtoMtables: true
     }
   },
   computed: {
+    getMainStringFields () {
+      return this.blueprints.db.fields.filter(i => { return ((!!i.not_null) && ( (!!!i.primary_key) || (!!i.editable) ) && (['string', 'md5'].includes(i.type.name))) });
+    },
+    getMainForeignFields () {
+      return this.blueprints.db.fields.filter(i => { return ((!!i.not_null) && ( (!!!i.primary_key) || (!!i.editable) ) && (i.type.name == 'foreign')) });
+    },
+    getPrimaryBooleanFields () {
+      return this.blueprints.db.fields.filter(i => { return ((!!i.not_null) && ( (!!!i.primary_key) || (!!i.editable) ) && (i.type.name == 'boolean')) });
+    },
+    getSecondaryBooleanFields () {
+      return this.blueprints.db.fields.filter(i => { return ((!!!((!!i.not_null) && ( (!!!i.primary_key) || (!!i.editable) ))) && i.type.name == 'boolean') });
+    },
+    getSecondaryStringFields () {
+      return this.blueprints.db.fields.filter(i => { return ((!!!((!!i.not_null) && ( (!!!i.primary_key) || (!!i.editable) ))) && ['string', 'str_fa_icon'].includes(i.type.name)) });
+    },
+    getSecondaryNumericFields () {
+      return this.blueprints.db.fields.filter(i => { return ((!!!i.primary_key) && (!!!((!!i.not_null) && ( (!!!i.primary_key) || (!!i.editable) ))) && ['bigInteger', 'decimal', 'double', 'integer'].includes(i.type.schema_table_type)) });
+    },
     hasPrimaryKeyValues () {
       let hasValues = true;
 
@@ -104,73 +212,84 @@ export default {
     },
   },
   methods: {
-    storeNewData (data) {
-      console.log('Inserido');
-      console.log(data);
-      this.formData = data;
+    onModalEditSuccess (data) {
+      if (data) {
+        this.formData = this.deepClone(data);
+      }
+    },
+    openEditModal () {
+      this.showEditModal = true;
+    },
+    confirmModalInsert () {
+      this.$refs.XisFormInlineInsert.submitForm();
+    },
+    getDataValue (field) {
+      if (['foreign'].includes(field.type.name)) {
+        if (field.joins.length) {
+          if (field.joins[0].model_foreign_function) {
+            if (this.formData[field.joins[0].model_foreign_function]) {
+              if (field.joins[0].visible_field) {
+                if (field.joins[0].visible_field.name) {
+                  if (this.formData[field.joins[0].model_foreign_function][field.joins[0].visible_field.name]) {
+                    return this.formData[field.joins[0].model_foreign_function][field.joins[0].visible_field.name];
+                  }
+                }
+              }
+            }
+          }
+        }
+      } else if (['boolean'].includes(field.type.name)) {
+        if (this.formData[field.name]) {
+          return 'true';
+        } else {
+          return 'false';
+        }
+      }
+
+      return this.formData[field.name];
     }
   },
   created () {
-    if (this.data) {
-      this.formData = this.deepClone(this.data);
+    if (!this.formData) {
+      if (this.data) {
+        this.formData = this.deepClone(this.data)
+      }
     }
-  },
-  mounted () {
+
+    console.log('Blueprints');
     console.log(this.blueprints);
   }
 }
 </script>
 
 <style lang="scss">
-  #XisView {
+#XisView {
+  .data-block {
     position: relative;
     display: flex;
     flex-flow: wrap;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-left: 4px solid #3c8dbc;
+    box-shadow: 0 0 14px #ddd;
+    background-color: #fff;
 
-    &>.horizontal-block {
-      position: relative;
-      display: flex;
-      flex-flow: nowrap;
-      width: 100%;
-      margin-bottom: 12px;
+    &.second-data-block {
+      border-top: 4px solid #3c8dbc;
+      border-left: none;
+      margin-top: 12px;
+    }
 
-      &:last-of-type {
-        margin-bottom: 0;
-      }
-
-      .left-pane {
-        padding: 12px;
-        width: calc(60% - 12px);
-        // max-height: 600px;
-        overflow: auto;
-        box-shadow: 0 0 8px #ddd;
-        border: 1px solid #ccc;
-        background-color: #f6f6f6;
-        // background-color: #343a40;
-      }
-
-      .right-pane {
-        position: relative;
-        display: flex;
-        flex-flow: wrap;
-        flex-direction: column;
-        width: calc(40%);
-        margin-left: auto;
-
-        .vertical-block {
-          position: relative;
-          width: 100%;
-          // padding: 12px;
-          margin-bottom: 12px;
-          // box-shadow: 0 0 8px #ddd;
-          // border: 1px solid #ccc;
-          // background-color: #eaeaea;
-
-          &:last-of-type {
-            margin-bottom: 0;
-          }
-        }
-      }
+    &.no-padding {
+      padding: 0;
     }
   }
+
+  h4.view-title {
+    width: 100%;
+    // border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 24px;
+  }
+}
 </style>

@@ -7,14 +7,15 @@
       :disabled="submiting"
     />
     <hr>
-    <xis-form layout="inline"
+    <xis-form
+      layout="vertical"
       :show-actions="false"
     >
       <xis-input :name="'extra-word'" v-model="extraWord" :label="'word.WORD'" :disabled="submiting" />
       <xis-input :name="'extra-translation'" v-model="extraTranslation" :label="'word.TRANSLATION'" :disabled="submiting" />
     </xis-form>
     <hr>
-    <xis-form layout="inline"
+    <xis-form layout="vertical"
       v-for="(word, index) in getUntranslatedWords" :key="'unstranslated-word-form-' + ((listStart * perPage) + index)"
       :show-actions="false"
     >

@@ -1,60 +1,27 @@
 <template>
   <div
-    id="XisList"
     v-if="dbBlueprints != null"
+    id="XisList"
+    :class="{'no-borders': noBorders}"
   >
-    <xis-modal
-      ref="listSingleAddModal"
-      :title="'modal_add_new_' + dbBlueprints.db.name"
-      @modal-confirmed="confirmModalInsert"
-      v-model="showListAddModal"
-    >
-      <xis-form
-        ref="XisFormInlineInsert"
-        :blueprints="dbBlueprints"
-        :show-actions="false"
-        @submiting="$refs.listSingleAddModal.startLoading()"
-        @submited="$refs.listSingleAddModal.endLoading()"
-        @success="onModalInsertSuccess"
-      ></xis-form>
-    </xis-modal>
 
     <xis-list-actions-bar
       :blueprints="dbBlueprints"
       :route-limiters="routeLimiters"
+      :no-borders="noBorders"
+      v-model="simpleSearch"
       @filters-set="fetchData"
+      @refresh-requested="onRefreshRequested"
     />
 
     <div
       class="xis-list"
       v-if="data"
     >
-      <div class="list-header">
-        <div
-          class="list-row detail-row"
-          v-if="showDetailedHeader"
-        >
-          <div class="list-col" :style="{'width': '100%', 'display': 'flex', 'justify-content': 'space-between'}">
-            <xis-translator :text="'table_name.' + dbBlueprints.db.name" :style="{'margin': 'auto 0'}"></xis-translator>
-            <a-button
-              type="danger"
-              @click="showAddModal"
-            >
-              <xis-translator :text="'modal_add_new_' + dbBlueprints.db.name" />
-            </a-button>
-          </div>
-        </div>
-        <div
-          class="list-row detail-row"
-          v-if="showDetailedHeader"
-        >
-          <div class="list-col" :style="{'width': '80%'}">
-            <xis-translator :text="'Total'" /> <xis-translator :text="'table_name_by_lines.' + dbBlueprints.db.name" />
-          </div>
-          <div class="list-col" :style="{'width': '20%', 'text-align': 'right', 'display': 'flex', 'display': 'block'}">
-            {{totalResults}}
-          </div>
-        </div>
+      <div
+        v-if="!!!noHeaders"
+        class="list-header"
+      >
         <div class="list-row">
           <div class="list-col left-border" :style="{'width': '80px', 'display': 'flex'}">
             #
@@ -96,12 +63,12 @@
       </div>
 
       <div
-        v-else-if="totalResults > 0"
+        v-else-if="(totalResults > 0) && (filteredData.length)"
         class="list-body"
       >
         <div
           class="list-row"
-          v-for="(row, rowIndex) in data" :key="'xis-list-row-' + (row.id || rowIndex)"
+          v-for="(row, rowIndex) in filteredData" :key="'xis-list-row-' + (row.id || rowIndex)"
         >
           <div class="list-col left-border" :style="{'width': '80px', 'display': 'flex', 'color': '#999'}">
             {{rowIndex + 1}}
@@ -158,7 +125,14 @@
         >
           <div class="list-col" style="width: 100%;">
             <span>
-              <xis-translator :text="'WORD.NOTHING_TO_SHOW'" />
+              <xis-translator
+                v-if="!!!totalResults"
+                :text="'WORD.NOTHING_TO_SHOW'"
+              />
+              <xis-translator
+                v-if="(totalResults > 0) && (!!!filteredData.length)"
+                :text="'WORD.NOTHING_TO_SHOW_BY_SEARCH'"
+              />
             </span>
           </div>
         </div>
@@ -166,7 +140,7 @@
       
       <div
         class="list-foot"
-        v-show="totalPages > 1"
+        v-show="!!!noHeaders"
       >
         <div class="list-row">
           <div class="list-col" style="width: 100%; padding: 8px 12px;">
@@ -231,11 +205,13 @@ export default {
       type: Boolean,
       default: false
     },
+    'no-borders': { type: Boolean, default: false },
+    'no-headers': { type: Boolean, default: false },
     'route-limiters': {},
     'show-detailed-header': {
       type: Boolean,
       default: false
-    }
+    },
   },
   data () {
     return {
@@ -249,10 +225,15 @@ export default {
       data: [],
       cols: [],
       showAdvancedFilters: false,
-      showListAddModal: true
+      showListAddModal: true,
+      simpleSearch: null
     }
   },
   watch: {
+    simpleSearch (newValue) {
+      console.log('Busca simples feita por');
+      console.log(newValue);
+    },
     currentPage (newValue, oldValue) {
       if (newValue != oldValue) {
         this.fetchData();
@@ -265,6 +246,17 @@ export default {
     }
   },
   computed: {
+    filteredData () {
+      return this.data.filter(row => {
+        let found = true;
+
+        if (this.simpleSearch) {
+          found = false;
+        }
+
+        return found;
+      })
+    },
     getCols () {
       if (!this.dbBlueprints) return [];
 
@@ -317,12 +309,8 @@ export default {
     }
   },
   methods: {
-    onModalInsertSuccess () {
+    onRefreshRequested () {
       this.fetchData();
-      this.showListAddModal = false;
-    },
-    confirmModalInsert () {
-      this.$refs.XisFormInlineInsert.submitForm();
     },
     showAddModal () {
       this.$refs.listSingleAddModal.openModal();
@@ -412,6 +400,11 @@ export default {
     font-size: .8rem;
     border: none;
     background: none;
+    box-shadow: 0 0 13px #aaa6;
+
+    &.no-borders {
+      box-shadow: none;
+    }
 
     .xis-list {
       position: relative;

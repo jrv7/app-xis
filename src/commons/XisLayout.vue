@@ -104,7 +104,7 @@ export default {
 
 <style lang="scss">
   body {
-    background-color: #ddd;
+    background-color: #fff;
   }
 
   #XisMainBlock {

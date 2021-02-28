@@ -8,6 +8,7 @@
       <xis-select
         v-for="(joined, index) in field.joins" :key="'form-field-type-foreign-' + field.id + '-' + index"
         :form="form"
+        :formLayout="formLayout"
         :name="field.name"
         :placeholder="field.name"
         :label="`${field.table.name}.${field.name}`"
@@ -23,6 +24,7 @@
     <xis-select
       v-else-if="[18].includes(field.type.id)"
       :form="form"
+      :formLayout="formLayout"
       :name="field.name"
       :placeholder="field.name"
       :label="`${field.table.name}.${field.name}`"
@@ -36,6 +38,7 @@
     <xis-boolean
       v-else-if="[8].includes(field.type.id)"
       :form="form"
+      :formLayout="formLayout"
       v-model="currentValue"
       :fieldId="field.id"
       :name="field.name"
@@ -49,6 +52,7 @@
     <xis-date-time
       v-else-if="[12, 13, 19, 21].includes(field.type.id)"
       :form="form"
+      :formLayout="formLayout"
       v-model="currentValue"
       :fieldId="field.id"
       :name="field.name"
@@ -72,6 +76,7 @@
         type="password"
         v-if="!!displayFields"
         :form="form"
+        :formLayout="formLayout"
         :name="field.name"
         :placeholder="field.name"
         :label="`${field.table.name}.${field.name}`"
@@ -84,6 +89,7 @@
         type="password"
         v-if="!!displayFields"
         :form="form"
+        :formLayout="formLayout"
         :name="'confirm_' + field.name"
         :placeholder="_XisT('Confirm') + ' ' + field.name"
         :label="null"
@@ -96,6 +102,7 @@
     <xis-input
       v-else
       :form="form"
+      :formLayout="formLayout"
       :name="field.name"
       :placeholder="field.name"
       :label="`${field.table.name}.${field.name}`"
@@ -126,6 +133,7 @@ export default {
     disbaled: { type: Boolean, default: false },
     required: { type: Boolean, defatul: false },
     showConditionalFields: { type: Boolean, defatul: false },
+    formLayout: { type: String, default: 'horizontal' },
   },
   data () {
     return {

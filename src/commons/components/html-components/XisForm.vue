@@ -1,5 +1,16 @@
 <template>
-  <a-form :form="form" :layout="layout" :style="{'width': '100%'}">
+  <a-form
+    :form="form"
+    :layout="layout"
+    class="xis-form"
+    :style="{'width': '100%'}"
+  >
+    <slot name="header">
+      <h4 class="form-title">
+        <xis-translator :text="title" />
+      </h4>
+    </slot>
+    <hr>
     <a-alert
       v-for="(message, index) in formErrorMessages" :key="'form-error-message-' + index"
       :message="_XisT('form_field_error_' + message.field)"
@@ -13,6 +24,7 @@
     <xis-form-field
       v-for="(keyField, index) in keyFields" :key="'form-key-field-' + (index)"
       :form="form"
+      :formLayout="layout"
       :field="keyField"
       :data="formData"
       v-model="formData[keyField.name]"
@@ -88,7 +100,8 @@ export default {
       type: Boolean,
       default: true
     },
-    layout: { type: String, default: 'vertical' },
+    layout: { type: String, default: 'horizontal' },
+    title: { type: String, default: 'word.default_form_title' },
     'is-submiting': { type: Boolean, default: false }
   },
   data () {
@@ -233,6 +246,18 @@ export default {
 </script>
 
 <style lang="scss">
+.xis-form {
+  position: relative;
+  padding: 12px;
+  background-color: #f4f4f4;
+  border: 1px solid #ddd;
+  box-shadow: 0 0 13px #aaa6;
+
+  .form-title {
+    font-size: 1.2rem;
+  }
+}
+
 .buttons-container {
   position: relative;
   display: flex;

@@ -81,36 +81,37 @@ export default {
         }
       }
 
-      if (accessedMenuHash) {
-        this.xisStateMenuTree.forEach(mainM => {
-          mainM.children.forEach(fatherM => {
-            fatherM.children.forEach(currentM => {
-              if ((currentM.menu_url_hash == accessedMenuHash) && (mainM.menu_url_hash == this._XIS_Current_Menu.mainMenuId)) {
-                fatherHash = fatherM;
-                mainHash = mainM;
-              }
-            })
-          })
-        });
-        
-        if ((!this.openKeys.length) && (!this.collapsed) && fatherHash) {
-          this.openKeys = [];
-          this.openKeys.push('vertical-menu-' + fatherHash.menu_url_hash);
-        }
-
-        if (mainHash) {
-          return mainHash.children;
-        } else {
-          if (this._XIS_Current_Menu.mainMenuId) {
-            let has_menu = this.xisStateMenuTree.filter(i => { return (i.menu_url_hash == this._XIS_Current_Menu.mainMenuId) });
-
-            if (has_menu.length) {
-              return has_menu[0].children;
+      this.xisStateMenuTree.forEach(mainM => {
+        mainM.children.forEach(fatherM => {
+          fatherM.children.forEach(currentM => {
+            if ((currentM.menu_url_hash == accessedMenuHash) && (mainM.menu_url_hash == this._XIS_Current_Menu.mainMenuId)) {
+              fatherHash = fatherM;
+              mainHash = mainM;
             }
+          })
+        })
+      });
+      
+      if ((!this.openKeys.length) && (!this.collapsed) && fatherHash) {
+        this.openKeys = [];
+        this.openKeys.push('vertical-menu-' + fatherHash.menu_url_hash);
+      }
+
+      console.log('Aqui');
+
+      if (mainHash) {
+        return mainHash.children;
+      } else {
+        if (this._XIS_Current_Menu.mainMenuId) {
+          let has_menu = this.xisStateMenuTree.filter(i => { return (i.menu_url_hash == this._XIS_Current_Menu.mainMenuId) });
+
+          if (has_menu.length) {
+            return has_menu[0].children;
           }
         }
-
       }
+
+      console.log('Retornando menus vazios');
       return [];
     },
   },

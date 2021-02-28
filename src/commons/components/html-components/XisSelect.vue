@@ -1,6 +1,15 @@
 <template>
-  <a-form-item>
-    <xis-translator :text="label" />
+  <a-form-item
+    class="xis-select"
+    :label-col="formItemLayout.labelCol"
+    :wrapper-col="formItemLayout.wrapperCol"
+  >
+    <template
+      slot="label"
+      v-if="!!!isHidden"
+    >
+      {{_XisT(label)}}
+    </template>
     <a-select
       v-if="form"
       :mode="mode"
@@ -86,14 +95,16 @@ export default {
     apiUrl: {
       type: String
     },
-    disabled: { type: Boolean, default: false }
+    disabled: { type: Boolean, default: false },
+    formLayout: { type: String, default: 'horizontal' },
+    'is-hidden': { type: Boolean, default: false },
   },
   data () {
     return {
       selectOptions: [],
       selected: null,
       useTranslation: false,
-      afterMount: false
+      afterMount: false,
     }
   },
   watch: {
@@ -104,6 +115,15 @@ export default {
     }
   },
   computed: {
+    formItemLayout() {
+      const { formLayout } = this;
+      return formLayout === 'horizontal'
+        ? {
+            labelCol: { span: 7 },
+            wrapperCol: { span: 16, offset: 1 },
+          }
+        : {};
+    },
     validationRules () {
       let rules = [];
 
@@ -162,5 +182,9 @@ export default {
 </script>
 
 <style lang="scss">
-
+.xis-select {
+  .ant-select {
+    box-shadow: 0 0 6px #dddf;
+  }
+}
 </style>

@@ -25,14 +25,28 @@ $body-color: #111;
 }
 
 .ant-btn-secondary {
-    background-color: #3c8dbc !important;
-    border-color: #4d626d !important;
+    background-color: #58aada !important;
+    border-color: #506f80 !important;
+    color: #fff !important;
     // box-shadow: 0 0 3px #5493b8 !important;
-    color: #c7c7c7 !important;
 
     &:hover {
         background-color: #4b99c7 !important;
-        box-shadow: 0 0 3px #fff8 !important;
+        color: #c7c7c7 !important;
+        // box-shadow: 0 0 3px #fff8 !important;
+    }
+}
+
+.ant-btn-default {
+    background-color: #e2eef5 !important;
+    border-color: #9cb9c9 !important;
+    color: #666 !important;
+    // box-shadow: 0 0 3px #5493b8 !important;
+
+    &:hover {
+        background-color: #bfd6e2 !important;
+        color: #666 !important;
+        // box-shadow: 0 0 3px #fff8 !important;
     }
 }
 

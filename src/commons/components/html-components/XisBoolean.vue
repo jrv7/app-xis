@@ -1,6 +1,14 @@
 <template>
-  <a-form-item>
-    <xis-translator :text="label" />
+  <a-form-item
+    :label-col="formItemLayout.labelCol"
+    :wrapper-col="formItemLayout.wrapperCol"
+  >
+    <template
+      slot="label"
+      v-if="!!!isHidden"
+    >
+      {{_XisT(label)}}
+    </template>
     <a-radio-group
       v-if="form"
       v-decorator="[
@@ -64,6 +72,8 @@ export default {
     readonly: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
     required: { type: Boolean, default: false },
+    formLayout: { type: String, default: 'horizontal' },
+    'is-hidden': { type: Boolean, default: false },
   },
   data () {
     return {
@@ -83,6 +93,17 @@ export default {
         this.$emit('input', newValue);
       }
     }
+  },
+  computed: {
+    formItemLayout() {
+      const { formLayout } = this;
+      return formLayout === 'horizontal'
+        ? {
+            labelCol: { span: 7 },
+            wrapperCol: { span: 16, offset: 1 },
+          }
+        : {};
+    },
   },
   methods: {
     onChange(e) {

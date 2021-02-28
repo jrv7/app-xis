@@ -88,8 +88,8 @@ export default {
       dictionary: null,
       showTranslator: false,
       languages: [],
-      languageTableId: 36,
-      languageTableField: 142,
+      languageTableId: 7,
+      languageTableField: 148,
       selectedLanguage: 1,
       translatedText: null,
       isLoading: false

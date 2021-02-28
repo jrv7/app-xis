@@ -2,6 +2,7 @@
   <div id="XisListActionsBar">
     <a-input
       class="inp-search"
+      v-model="simpleSearch"
       :placeholder="_XisT('WORD.SEARCH') + '...'"
     >
       <a-button 
@@ -15,6 +16,13 @@
     </a-input>
 
     <a-button-group>
+      <a-button
+        type="default"
+        @click="showAddModal"
+      >
+        {{_XisT('list_action_button_new_' + blueprints.db.name)}}
+      </a-button>
+
       <router-link
         tag="a-button"
         type="default"
@@ -50,15 +58,35 @@
       :blueprints="blueprints"
       @set="onFiltersSet"
     ></xis-list-advanced-filters>
+
+    <xis-modal
+      ref="listSingleAddModal"
+      :title="'modal_add_new_' + blueprints.db.name"
+      @modal-confirmed="confirmModalInsert"
+      v-model="showListAddModal"
+    >
+      <xis-form
+        ref="XisFormInlineInsert"
+        :blueprints="blueprints"
+        :show-actions="false"
+        @submiting="$refs.listSingleAddModal.startLoading()"
+        @submited="$refs.listSingleAddModal.endLoading()"
+        @success="onModalInsertSuccess"
+      ></xis-form>
+    </xis-modal>
   </div>
 </template>
 
 <script>
 import XisListAdvancedFilters from './XisListAdvancedFilters.vue';
+import XisModal from '@/commons/components/XisModal';
+import XisForm from '@/commons/components/html-components/XisForm';
+
 export default {
   name: 'XisListActionsBar',
-  components: { XisListAdvancedFilters },
+  components: { XisListAdvancedFilters, XisModal, XisForm },
   props: {
+    value: {},
     blueprints: {},
     'route-limiters': {}
   },
@@ -66,11 +94,28 @@ export default {
     return {
       showAdvancedFilters: false,
       downloading: false,
+      showListAddModal: true,
+      simpleSearch: null
+    }
+  },
+  watch: {
+    simpleSearch (newValue) {
+      this.$emit('input', newValue);
     }
   },
   computed: {
   },
   methods: {
+    onModalInsertSuccess () {
+      this.$emit('refresh-requested');
+      this.showListAddModal = false;
+    },
+    confirmModalInsert () {
+      this.$refs.XisFormInlineInsert.submitForm();
+    },
+    showAddModal () {
+      this.$refs.listSingleAddModal.openModal();
+    },
     routeParams (action) {
       let params = {};
 
@@ -129,6 +174,11 @@ export default {
     onFiltersSet () {
       this.$emit("filters-set");
     }
+  },
+  created () {
+    if (this.value) {
+      this.simpleSearch = this.deepClone(this.value);
+    }
   }
 }
 </script>
@@ -140,11 +190,10 @@ export default {
   justify-content: space-between;
   width: 100%;
   margin: 0;
-  margin-bottom: 12px;
+  // margin-bottom: 12px;
   padding: 12px;
-  border: 1px solid #d6d6d6;
+  border: 1px solid #ddd;
   border-radius: 0;
-  box-shadow: 0 0 22px #0006;
   background-color: #fafafa;
 
   &:hover {
