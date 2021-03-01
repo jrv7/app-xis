@@ -17,20 +17,21 @@
 
     <a-button-group>
       <a-button
+        v-if="checkPermission(blueprints.db.userPermissions, 'create')"
         type="default"
         @click="showAddModal"
       >
         {{_XisT('list_action_button_new_' + blueprints.db.name)}}
       </a-button>
 
-      <router-link
+      <!-- <router-link
         tag="a-button"
         type="default"
         v-if="_XIS_Active_Menu.actions.length"
         :to="{ name: routeName(_XIS_Active_Menu.actions[0]), params: routeParams(_XIS_Active_Menu.actions[0])}"
       >
         <xis-translator :text="_XIS_Active_Menu.actions[0].target_menu.menu_title" />
-      </router-link>
+      </router-link> -->
       
       <a-button
         type="secondary"

@@ -56,11 +56,13 @@
           </a-select-option>
         </a-select>
 
-        <button
-          class="btn btn-link my-2 my-sm-0"
-          type="button"
+        <a-button
+          icon="logout"
+          :style="{'margin-left': '12px'}"
           @click="signOut"
-        >{{_XisT('Log out')}}</button>
+        >
+          {{_XisT('Log out')}}
+        </a-button>
       </form>
     </div>
 
@@ -152,6 +154,8 @@ export default {
   top: 0;
   left: 220px;
   right: 0;
+  min-height: 56px;
+  max-height: 56px;
   background-color: #3c8dbc;
   z-index: 99;
   box-shadow: 0 0 12px #0002;

@@ -1,77 +1,14 @@
 <template>
   <div id="XisView">
     <a-row :gutter="16">
+      <xis-table-view
+        :blueprints="blueprints"
+        :data="formData"
+      />
+
       <a-col :span="12">
-        <div class="data-block main-data-block">
-          <xis-view-flex-line :span="24">
-            <h4 class="">
-              <xis-translator :text="'table_name_singular.' + blueprints.db.name" />
-            </h4>
-            <a-button
-              type="default"
-              @click="openEditModal"
-            >Editar</a-button>
-          </xis-view-flex-line>
-
-          <xis-view-line :span="24"><hr></xis-view-line>
-
-          <xis-view-line
-            v-for="field in getMainStringFields" :key="'line-text-' + field.id"
-            :span="24"
-            :type="field.type.name"
-            :label="_XisT(field.table.name + '.' + field.name)"
-            :text="getDataValue(field)"
-            :highlight="1"
-          />
-
-          <xis-view-line
-            v-for="field in getMainForeignFields" :key="'line-text-' + field.id"
-            :span="12"
-            :type="field.type.name"
-            :label="_XisT(field.table.name + '.' + field.name)"
-            :text="getDataValue(field)"
-            :highlight="2"
-          />
-
-          <xis-view-line :span="24" /><xis-view-line :span="24" />
-
-          <xis-view-line
-            v-for="field in getPrimaryBooleanFields" :key="'line-text-' + field.id"
-            :span="4"
-            :type="field.type.name"
-            :label="_XisT(field.table.name + '.' + field.name)"
-            :text="getDataValue(field)"
-          />
-
-          <xis-view-line
-            v-for="field in getSecondaryBooleanFields" :key="'line-text-' + field.id"
-            :span="4"
-            :type="field.type.name"
-            :label="_XisT(field.table.name + '.' + field.name)"
-            :text="getDataValue(field)"
-          />
-
-          <xis-view-line :span="24" /><xis-view-line :span="24" />
-
-          <xis-view-line
-            v-for="field in getSecondaryStringFields" :key="'line-text-' + field.id"
-            :span="8"
-            :type="field.type.name"
-            :label="_XisT(field.table.name + '.' + field.name)"
-            :text="getDataValue(field)"
-          />
-
-          <xis-view-line
-            v-for="field in getSecondaryNumericFields" :key="'line-text-' + field.id"
-            :span="8"
-            :type="field.type.name"
-            :label="_XisT(field.table.name + '.' + field.name)"
-            :text="getDataValue(field)"
-          />
-        </div>
-
         <div
-          v-for="mmTable in blueprints.db.many_to_many_tables" :key="'m-m-table-block-' + mmTable.n_table.id"
+          v-for="mmTable in getNtoMTables" :key="'m-m-table-block-' + mmTable.n_table.id"
           class="data-block second-data-block no-padding"
         >
           <xis-view-flex-line :span="24" :style="{'padding': '12px'}">
@@ -96,9 +33,6 @@
             no-headers
           ></xis-list>
         </div>
-      </a-col>
-
-      <a-col :span="12">
         <div
           v-if="hasPrimaryKeyValues"
           class="right-pane"
@@ -122,40 +56,30 @@
       </a-col>
     </a-row>
 
-    <xis-modal
-      ref="listSingleAddModal"
-      :title="'modal_add_new_' + blueprints.db.name"
-      @modal-confirmed="confirmModalInsert"
-      v-model="showEditModal"
+    <a-row
+      v-for="mmTable in getNtoMTableMappers" :key="'m-m-mapper-table-block-' + mmTable.n_table.id"
     >
-      <xis-form
-        ref="XisFormInlineInsert"
-        :blueprints="blueprints"
-        :show-actions="false"
-        :data="data"
-        @submiting="$refs.listSingleAddModal.endLoading()"
-        @submited="$refs.listSingleAddModal.endLoading(); showEditModal = false"
-        @success="onModalEditSuccess"
-      ></xis-form>
-    </xis-modal>
+      <xis-mapper-table-view
+        :pivot-table="mmTable"
+        :data="formData"
+      />
+    </a-row>
   </div>
 </template>
 
 <script>
-import XisViewLine from './view-components/XisViewLine';
-import XisViewFlexLine from './view-components/XisViewFlexLine';
+import XisTableView from './view-components/XisTableView';
+import XisMapperTableView from './view-components/XisMapperTableView';
 import XisList from '@/commons/components/XisList.vue';
-import XisModal from '@/commons/components/XisModal';
-import XisForm from '@/commons/components/html-components/XisForm';
+import XisViewFlexLine from './view-components/XisViewFlexLine';
 
 export default {
   name: 'XisView',
   components: {
-    XisViewLine,
-    XisViewFlexLine,
+    XisTableView,
+    XisMapperTableView,
     XisList,
-    XisModal,
-    XisForm,
+    XisViewFlexLine
   },
   props: {
     blueprints: {
@@ -170,28 +94,17 @@ export default {
   data () {
     return {
       formData: null,
-      showEditModal: false,
       showMtoMtables: true
     }
   },
   computed: {
-    getMainStringFields () {
-      return this.blueprints.db.fields.filter(i => { return ((!!i.not_null) && ( (!!!i.primary_key) || (!!i.editable) ) && (['string', 'md5'].includes(i.type.name))) });
+    getNtoMTables () {
+      return this.blueprints.db.many_to_many_tables.filter(i => { return (['join_n_m'].includes(i.pivot_table.type.name)) });
     },
-    getMainForeignFields () {
-      return this.blueprints.db.fields.filter(i => { return ((!!i.not_null) && ( (!!!i.primary_key) || (!!i.editable) ) && (i.type.name == 'foreign')) });
-    },
-    getPrimaryBooleanFields () {
-      return this.blueprints.db.fields.filter(i => { return ((!!i.not_null) && ( (!!!i.primary_key) || (!!i.editable) ) && (i.type.name == 'boolean')) });
-    },
-    getSecondaryBooleanFields () {
-      return this.blueprints.db.fields.filter(i => { return ((!!!((!!i.not_null) && ( (!!!i.primary_key) || (!!i.editable) ))) && i.type.name == 'boolean') });
-    },
-    getSecondaryStringFields () {
-      return this.blueprints.db.fields.filter(i => { return ((!!!((!!i.not_null) && ( (!!!i.primary_key) || (!!i.editable) ))) && ['string', 'str_fa_icon'].includes(i.type.name)) });
-    },
-    getSecondaryNumericFields () {
-      return this.blueprints.db.fields.filter(i => { return ((!!!i.primary_key) && (!!!((!!i.not_null) && ( (!!!i.primary_key) || (!!i.editable) ))) && ['bigInteger', 'decimal', 'double', 'integer'].includes(i.type.schema_table_type)) });
+    getNtoMTableMappers () {
+      console.log('Mapper tables:');
+      console.log(this.blueprints.db.many_to_many_tables.filter(i => { return (['join_n_m_map'].includes(i.pivot_table.type.name)) }));
+      return this.blueprints.db.many_to_many_tables.filter(i => { return (['join_n_m_map'].includes(i.pivot_table.type.name)) });
     },
     hasPrimaryKeyValues () {
       let hasValues = true;
@@ -212,42 +125,6 @@ export default {
     },
   },
   methods: {
-    onModalEditSuccess (data) {
-      if (data) {
-        this.formData = this.deepClone(data);
-      }
-    },
-    openEditModal () {
-      this.showEditModal = true;
-    },
-    confirmModalInsert () {
-      this.$refs.XisFormInlineInsert.submitForm();
-    },
-    getDataValue (field) {
-      if (['foreign'].includes(field.type.name)) {
-        if (field.joins.length) {
-          if (field.joins[0].model_foreign_function) {
-            if (this.formData[field.joins[0].model_foreign_function]) {
-              if (field.joins[0].visible_field) {
-                if (field.joins[0].visible_field.name) {
-                  if (this.formData[field.joins[0].model_foreign_function][field.joins[0].visible_field.name]) {
-                    return this.formData[field.joins[0].model_foreign_function][field.joins[0].visible_field.name];
-                  }
-                }
-              }
-            }
-          }
-        }
-      } else if (['boolean'].includes(field.type.name)) {
-        if (this.formData[field.name]) {
-          return 'true';
-        } else {
-          return 'false';
-        }
-      }
-
-      return this.formData[field.name];
-    }
   },
   created () {
     if (!this.formData) {
@@ -264,26 +141,7 @@ export default {
 
 <style lang="scss">
 #XisView {
-  .data-block {
-    position: relative;
-    display: flex;
-    flex-flow: wrap;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-left: 4px solid #3c8dbc;
-    box-shadow: 0 0 14px #ddd;
-    background-color: #fff;
-
-    &.second-data-block {
-      border-top: 4px solid #3c8dbc;
-      border-left: none;
-      margin-top: 12px;
-    }
-
-    &.no-padding {
-      padding: 0;
-    }
-  }
+  
 
   h4.view-title {
     width: 100%;

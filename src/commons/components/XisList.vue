@@ -115,10 +115,6 @@
       <div
         v-else
         class="list-body"
-        :style="{
-          'max-height': 'calc(' + height + 'vh - 268px)',
-          'min-height': 'calc(' + height + 'vh - 268px)'
-        }"
       >
         <div
           class="list-row"
@@ -265,15 +261,15 @@ export default {
       const actionsColWidth = this.actionColWidth;
       const countCols = this.dbBlueprints.db.fields.filter(col => {
         if (this.simpleColumns) {
-          return ((!!!col.primary_key) || (col.display_in_lists && (!!col.not_null)))
+          return (((!!!col.primary_key) || col.editable) && ((!!col.display_in_lists && (!!col.not_null)) && (['int', 'string', 'foreign'].includes(col.type.name))));
         }
 
-        return col.display_in_lists
+        return (!!col.display_in_lists);
       }).length;
 
       this.dbBlueprints.db.fields.filter(col => {
         if (this.simpleColumns) {
-          return ((!!!col.primary_key) || (col.display_in_lists && (!!col.not_null)))
+          return (((!!!col.primary_key) || col.editable) && ((!!col.display_in_lists && (!!col.not_null)) && (['int', 'string', 'foreign'].includes(col.type.name))))
         }
 
         return col.display_in_lists
@@ -286,7 +282,7 @@ export default {
 
       let returnedColumns = this.dbBlueprints.db.fields.filter(col => {
         if (this.simpleColumns) {
-          return ((!!!col.primary_key) || (col.display_in_lists && (!!col.not_null)))
+          return (((!!!col.primary_key) || col.editable) && ((!!col.display_in_lists && (!!col.not_null)) && (['int', 'string', 'foreign'].includes(col.type.name))))
         }
 
         return col.display_in_lists
@@ -530,6 +526,7 @@ export default {
           padding: 0 12px;
           margin: 0;
           overflow: hidden;
+          // min-width: 100px;
 
           &.left-border {
             border-left: 1px solid #ddd;

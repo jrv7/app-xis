@@ -5,12 +5,19 @@
     class="xis-form"
     :style="{'width': '100%'}"
   >
-    <slot name="header">
-      <h4 class="form-title">
+    <slot
+      name="header"
+    >
+      <h4
+        class="form-title"
+        v-if="title"
+      >
         <xis-translator :text="title" />
       </h4>
     </slot>
-    <hr>
+    <hr
+      v-if="title"
+    >
     <a-alert
       v-for="(message, index) in formErrorMessages" :key="'form-error-message-' + index"
       :message="_XisT('form_field_error_' + message.field)"
@@ -46,7 +53,7 @@
 
     <slot />
 
-    <hr>
+    <hr v-if="showActions">
 
     <div class="buttons-container" v-if="showActions">
       <a-button
@@ -101,7 +108,7 @@ export default {
       default: true
     },
     layout: { type: String, default: 'horizontal' },
-    title: { type: String, default: 'word.default_form_title' },
+    title: { type: String, default: null },
     'is-submiting': { type: Boolean, default: false }
   },
   data () {

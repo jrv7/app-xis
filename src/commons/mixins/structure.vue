@@ -91,6 +91,19 @@ export default {
     async getData (menuHash, ids) {
       return await this.$axios.get('/data/view/by-menu/' + menuHash + '/' + ids);
     },
+    async getDataByTable (tableId, limiters = null, perPage = 20) {
+      return await this.$axios.get('/data/list/' + tableId + '?limiters=' + limiters + '&per-page=' + perPage);
+    },
+    async deleteDataByTable (tableId, data) {
+      return await this.$axios.post('/data/delete/' + tableId, {
+        _method: 'delete',
+        data
+      });
+    },
+    async insertByTable (tableId, data) {
+      return await this.$axios.post('/data/insert/' + tableId, data);
+    },
+    
     _XisT (text) {
       let translated = this._XIS_Dictionary.findIndex(
         item => String(item.word) == String(text)
@@ -198,6 +211,9 @@ export default {
       }
       console.log(error.config);
     },
+    checkPermission (permissions, permission = 'view') {
+      return !!permissions.filter(i => { return (i.permission.name == permission) }).length;
+    }
   }
 }
 </script>

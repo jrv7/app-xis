@@ -12,6 +12,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
+
 export default {
   name: 'XisPostLoginScreen',
   data () {
@@ -20,6 +22,9 @@ export default {
       loading: 0,
       timer: null
     }
+  },
+  computed: {
+    ...mapState(['xisStateUser', 'xisStateMenuTree']),
   },
   methods: {
     getRandomInt(max) {
@@ -38,8 +43,27 @@ export default {
           }
         });
     },
+    grandFatherMenuHash (menuItem) {
+      let mainHash = '-';
+      
+      this.xisStateMenuTree.forEach(mainM => {
+        mainM.children.forEach(fatherM => {
+          fatherM.children.forEach(currentM => {
+            if (currentM.menu_url_hash == menuItem.menu_url_hash) {
+              mainHash = mainM.menu_url_hash;
+            }
+          })
+        })
+      });
+
+      return mainHash;
+    },
     goHome () {
-      this.$router.push('Dashboard');
+      if (this.xisStateUser.default_menu) {
+        this.$router.push('/' + this.grandFatherMenuHash(this.xisStateUser.default_menu) + '/' + this.xisStateUser.default_menu.menu_url_hash);
+      } else {
+        this.$router.push('Dashboard');
+      }
     },
     startLoader () {
       let vm = this;

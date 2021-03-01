@@ -10,64 +10,27 @@
     >
       {{_XisT(label)}}
     </template>
-    <a-input
+    <a-textarea
       v-if="form"
       v-decorator="getDecorations"
       :placeholder="_XisT(placeholder)"
-      :type="getTypeByOption"
-      :step="numberSteps"
-      :min="numberMin"
-      :max="numberMax"
-      :maxlength="inputMaxlength"
       :size="'large'"
       :disabled="disabled && (!!!isHidden)"
     />
-    <a-input
+    <a-textarea
       v-else
       :placeholder="_XisT(placeholder)"
-      :type="getTypeByOption"
-      :step="numberSteps"
-      :min="numberMin"
-      :max="numberMax"
-      :maxlength="inputMaxlength"
       :size="'large'"
       :disabled="(disabled || readonly) && (!!!isHidden)"
       :class="{'is-readonly': readonly}"
       v-model="inputValue"
-    >
-      <a-select
-        v-if="selectOption.length"
-        slot="addonBefore"
-        v-decorator="['prefix', { initialValue: '86' }]"
-        style="min-width: 120px"
-        :default-value="selectTarget.id"
-        @change="onSelectChange"
-      >
-        <a-select-option :value="0">{{_XisT('Choose...')}}</a-select-option>
-        <a-select-option
-          v-for="option in selectOption" :key="'input-' + name + '-inner-select-option-' + option"
-          :value="option.id"
-        >
-          {{_XisT(option.value)}}
-        </a-select-option>
-      </a-select>
-
-      <a-button 
-        slot="addonAfter"
-        type="link"
-        size="small"
-        v-if="actionButton"
-        @click="actionButton(actionButtonUniqueId)"
-      >
-        {{actionButtonIcon}}
-      </a-button>
-    </a-input>
+    ></a-textarea>
   </a-form-item>
 </template>
 
 <script>
 export default {
-  name: 'XisInput',
+  name: 'XisTextarea',
   props: {
     fieldBlueprint: {},
     form: {},
@@ -97,8 +60,7 @@ export default {
       afterMount: false,
       numberSteps: '0',
       numberMin: null,
-      numberMax: null,
-      inputMaxlength: null
+      numberMax: null
     }
   },
   watch: {
@@ -210,11 +172,6 @@ export default {
             this.numberMax = this.fieldBlueprint.max_length ? this.fieldBlueprint.max_length : null;
             this.numberSteps = 0.00001;
             return 'number';
-          } break;
-
-          case (['char'].includes(this.fieldBlueprint.type.name)) :{
-            this.inputMaxlength = this.fieldBlueprint.max_length ? this.fieldBlueprint.max_length : 1;
-            return 'text';
           } break;
         }
       }

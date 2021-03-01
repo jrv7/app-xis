@@ -31,32 +31,34 @@
         'highlighted-2': (highlight == 2),
       }"
     >
-      <p
-        v-if="(text != null) && ['string'].includes(type)"
-        class="text-line line-text"
-      >
-        {{text}}
-      </p>
-      <p
-        v-else-if="(text != null) && ['boolean'].includes(type)"
-        class="text-line line-boolean"
-      >
-        <xis-translator :text="'WORD.' + text" />
-      </p>
-      <p
-        v-else-if="(text != null) && ['str_fa_icon'].includes(type)"
-        class="text-line line-boolean"
-      >
-        <a-icon :type="text" /> {{text}}
-      </p>
-      <p
-        v-else-if="label"
-        class="text-line line-text"
-        :class="{'no-text': (text == null)}"
-      >
-        <span v-if="(text != null)">{{text}}</span>
-        <xis-translator v-else :text="'word.no_value'" />
-      </p>
+      <slot name="text">
+        <p
+          v-if="(text != null) && ['string'].includes(type)"
+          class="text-line line-text"
+        >
+          {{text}}
+        </p>
+        <p
+          v-else-if="(text != null) && ['boolean'].includes(type)"
+          class="text-line line-boolean"
+        >
+          <xis-translator :text="'WORD.' + text" />
+        </p>
+        <p
+          v-else-if="(text != null) && ['str_fa_icon'].includes(type)"
+          class="text-line line-boolean"
+        >
+          <a-icon :type="text" /> {{text}}
+        </p>
+        <p
+          v-else-if="label"
+          class="text-line line-text"
+          :class="{'no-text': (text == null)}"
+        >
+          <span v-if="(text != null)">{{text}}</span>
+          <xis-translator v-else :text="'word.no_value'" />
+        </p>
+      </slot>
 
       <p
         v-if="label"

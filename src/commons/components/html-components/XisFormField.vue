@@ -3,7 +3,7 @@
     class="xis-form-field"
   >
     <div
-      v-if="[10].includes(field.type.id)"
+      v-if="['foreign'].includes(field.type.name)"
     >
       <xis-select
         v-for="(joined, index) in field.joins" :key="'form-field-type-foreign-' + field.id + '-' + index"
@@ -22,7 +22,7 @@
     </div>
 
     <xis-select
-      v-else-if="[18].includes(field.type.id)"
+      v-else-if="['from_list'].includes(field.type.name)"
       :form="form"
       :formLayout="formLayout"
       :name="field.name"
@@ -36,7 +36,7 @@
     ></xis-select>
 
     <xis-boolean
-      v-else-if="[8].includes(field.type.id)"
+      v-else-if="['boolean'].includes(field.type.name)"
       :form="form"
       :formLayout="formLayout"
       v-model="currentValue"
@@ -50,7 +50,7 @@
     ></xis-boolean>
 
     <xis-date-time
-      v-else-if="[12, 13, 19, 21].includes(field.type.id)"
+      v-else-if="['date', 'timestamp', 'datetime', 'time'].includes(field.type.name)"
       :form="form"
       :formLayout="formLayout"
       v-model="currentValue"
@@ -63,7 +63,7 @@
     ></xis-date-time>
 
     <div
-      v-else-if="[14].includes(field.type.id)"
+      v-else-if="['password'].includes(field.type.name)"
     >
       <a-button
         v-if="!!!displayFields"
@@ -99,8 +99,24 @@
       ></xis-input>
     </div>
 
+    <xis-textarea
+      v-else-if="['text'].includes(field.type.name)"
+      :field-blueprint="field"
+      :form="form"
+      :formLayout="formLayout"
+      :name="field.name"
+      :placeholder="field.name"
+      :label="`${field.table.name}.${field.name}`"
+      v-model="currentValue"
+      :disabled="((!!field.primary_key) && (!!!field.editable)) || disbaled"
+      :readonly="readonly"
+      :required="required"
+      :isHidden="(!!field.primary_key)"
+    ></xis-textarea>
+
     <xis-input
       v-else
+      :field-blueprint="field"
       :form="form"
       :formLayout="formLayout"
       :name="field.name"
@@ -117,13 +133,14 @@
 
 <script>
 import XisInput from '@/commons/components/html-components/XisInput.vue';
+import XisTextarea from '@/commons/components/html-components/XisTextarea.vue';
 import XisSelect from '@/commons/components/html-components/XisSelect.vue';
 import XisBoolean from '@/commons/components/html-components/XisBoolean.vue';
 import XisDateTime from '@/commons/components/html-components/XisDateTime.vue';
 
 export default {
   name: 'XisFormField',
-  components: { XisInput, XisSelect, XisBoolean, XisDateTime },
+  components: { XisInput, XisTextarea, XisSelect, XisBoolean, XisDateTime },
   props: {
     form: {},
     value: {},
