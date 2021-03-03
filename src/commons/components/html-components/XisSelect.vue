@@ -8,7 +8,7 @@
       slot="label"
       v-if="!!!isHidden"
     >
-      {{_XisT(label)}}
+      <span :title="_XisT(label)">{{_XisT(label)}}</span>
     </template>
     <a-select
       v-if="form"
@@ -98,6 +98,8 @@ export default {
     disabled: { type: Boolean, default: false },
     formLayout: { type: String, default: 'horizontal' },
     'is-hidden': { type: Boolean, default: false },
+    'conditional-field': {},
+    'conditional-value': {},
   },
   data () {
     return {
@@ -112,6 +114,9 @@ export default {
       if (this.afterMount) {
         this.$emit('input', newValue);
       }
+    },
+    conditionalValue (newValue) {
+      this.loadOptions();
     }
   },
   computed: {
@@ -132,15 +137,31 @@ export default {
       }
 
       return rules;
-    }
+    },
+    getConditionalLimiters () {
+      if (this.conditionalField) {
+        if (this.conditionalField.joins.length) {
+          if (this.conditionalField.joins[0].right_field) {
+            if (this.conditionalValue) {
+              return (this.$route.params.ids || '') + String(this.conditionalField.joins[0].right_field.id) + ':' + String(this.conditionalValue) + '-';
+            }
+          }
+        }
+      }
+      return null;
+    },
   },
   methods: {
     handleChange (value) {
       this.$emit('change', this.name, value);
     },
     loadOptions () {
+      let urlLimiters = this.$route.params.ids ?? '';
+
+      urlLimiters = String(urlLimiters) + this.getConditionalLimiters;
+
       let params = {
-        limiters: (this.$route.params.ids ? this.$route.params.ids : null)
+        limiters: urlLimiters
       };
       this.$axios.get(this.apiUrl, {
         params: params

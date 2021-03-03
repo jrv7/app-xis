@@ -195,7 +195,7 @@ export default {
     },
     defaultPerPage: {
       type: Number,
-      default: 50
+      default: 20
     },
     simpleColumns: {
       type: Boolean,
@@ -212,7 +212,7 @@ export default {
   data () {
     return {
       dbBlueprints: null,
-      perPage: 50,
+      perPage: 0,
       currentPage: 1,
       totalResults: 0,
       totalPages: 0,
@@ -315,7 +315,7 @@ export default {
       this.showAdvancedFilters = true;
     },
     getDataValueByColumn (row, col) {
-      if (col.type.id == 10) {
+      if (['foreign'].includes(col.type.name)) {
         if (col.joins) {
           if (col.joins.length) {
             if (row[col.joins[0].model_foreign_function]) {
@@ -359,24 +359,20 @@ export default {
       console.log(ids);
     }
   },
-  mounted () {
+  created () {
     if (this.defaultPerPage) {
       this.perPage = this.defaultPerPage;
     }
-
-    if (this.routeLimiters) {
-      console.log('Carregar dados com limitadores:');
-      console.log(this.routeLimiters);
-    }
-
+  },
+  mounted () {
     if (this.blueprints) {
       this.dbBlueprints = this.blueprints;
       this.fetchData();
     } else if (this.table) {
       this.fetchBlueprintsByTable(this.table)
         .then( ({data}) => {
-          console.log('Blueprints carregados');
-          console.log(data);
+          // console.log('Blueprints carregados');
+          // console.log(data);
           this.dbBlueprints = data;
 
           this.fetchData();
@@ -396,7 +392,8 @@ export default {
     font-size: .8rem;
     border: none;
     background: none;
-    box-shadow: 0 0 13px #aaa6;
+    // box-shadow: 0 0 13px #aaa6;
+    box-shadow: 0px 9.07207px 27.2162px rgba(129, 147, 171, 0.2);
 
     &.no-borders {
       box-shadow: none;

@@ -3,7 +3,7 @@
     <div class="data-block main-data-block">
       <xis-view-flex-line :span="24">
         <h4 class="">
-          <xis-translator :text="'table_name_singular.' + pivotTable.pivot_table_name" />
+          <xis-translator :text="'table_name_singular.' + pivotTable.pivot_table_name + '-by-' + pivotTable.n_table_name" />
         </h4>
         <a-button
           type="default"

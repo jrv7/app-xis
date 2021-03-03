@@ -44,10 +44,13 @@
         :form="form"
         :field="field"
         :data="formData"
+        :conditional-field="getConditionalField(field)"
+        :conditional-value="conditionalChecks[getConditionalField(field) ? getConditionalField(field).name : null]"
         v-model="formData[field.name]"
         :disbaled="submiting || isSubmiting"
         :required="(!!field.primary_key) || (!!field.not_null)"
         :showConditionalFields="!!!hasPrimaryKeyValues"
+        @changed="setConditionalCheckValues"
       ></xis-form-field>
     </div>
 
@@ -118,7 +121,8 @@ export default {
         name: null
       },
       form: this.$form.createForm(this, { name: 'default_form' }),
-      formErrorMessages: []
+      formErrorMessages: [],
+      conditionalChecks: {}
     }
   },
   watch: {
@@ -188,6 +192,27 @@ export default {
     }
   },
   methods: {
+    setConditionalCheckValues (field, value) {
+      this.conditionalChecks[field] = value;
+    },
+    getConditionalField (field) {
+      let conditionalField = null;
+      if (['foreign'].includes(field.type.name)) {
+        if (field.joins.length) {
+          field.joins.forEach(i => {
+            if (i.filter_field) {
+              conditionalField = this.blueprints.db.fields.filter(f => { return (f.id == i.filter_field.id) });
+
+              if (conditionalField.length) {
+                conditionalField = conditionalField[0];
+              }
+            }
+          });
+        }
+      }
+
+      return conditionalField;
+    },
     submitForm () {
       this.form.validateFields(err => {
         if (!err) {

@@ -70,6 +70,7 @@
         ref="XisFormInlineInsert"
         :blueprints="blueprints"
         :show-actions="false"
+        :layout="'vertical'"
         @submiting="$refs.listSingleAddModal.startLoading()"
         @submited="$refs.listSingleAddModal.endLoading()"
         @success="onModalInsertSuccess"

@@ -18,6 +18,9 @@
         :apiUrl="`/data/get-as-option/${joined.right_field.table.id}/${joined.visible_field.id}`"
         :readonly="readonly"
         :required="required"
+        :conditional-field="conditionalField"
+        :conditional-value="conditionalValue"
+        @change="emitValueChanged"
       ></xis-select>
     </div>
 
@@ -151,6 +154,8 @@ export default {
     required: { type: Boolean, defatul: false },
     showConditionalFields: { type: Boolean, defatul: false },
     formLayout: { type: String, default: 'horizontal' },
+    'conditional-field': {},
+    'conditional-value': {},
   },
   data () {
     return {
@@ -167,9 +172,12 @@ export default {
       if (this.afterMounted) {
         this.$emit('input', newValue);
       }
-    }
+    },
   },
   methods: {
+    emitValueChanged (field, value) {
+      this.$emit('changed', field, value);
+    },
     showFields () {
       this.displayFields = true;
     }

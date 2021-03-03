@@ -8,7 +8,7 @@
       slot="label"
       v-if="!!!isHidden"
     >
-      {{_XisT(label)}}
+      <span :title="_XisT(label)">{{_XisT(label)}}</span>
     </template>
     <a-input
       v-if="form"

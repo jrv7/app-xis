@@ -180,8 +180,9 @@ export default {
   padding: 12px;
   border: 1px solid #ddd;
   border-left: 4px solid #3c8dbc;
-  box-shadow: 0 0 14px #ddd;
   background-color: #fff;
+  // box-shadow: 0 0 14px #ddd;
+  box-shadow: 0px 9.07207px 27.2162px rgba(129, 147, 171, 0.2);
 
   &.second-data-block {
     border-right: 4px solid #3c8dbc;

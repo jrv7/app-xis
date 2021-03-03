@@ -39,7 +39,7 @@ export default {
     routeParams (action) {
       let params = {};
       let idParams = [];
-      let parsedParams = '-';
+      let parsedParams = this._XIS_Current_Menu.ids || '';
 
       this.blueprints.db.primary_keys.forEach(key => {
         idParams.push(String(key.id) + ':' + String(this.row[key.name]) + '-');

@@ -29,6 +29,7 @@
             :table="mmTable.pivot_table.id"
             :simple-columns="true"
             :route-limiters="$route.params.ids"
+            :default-per-page="10"
             no-borders
             no-headers
           ></xis-list>
@@ -45,7 +46,7 @@
               :byTable="true"
               :table="relatedTable.right_table.id"
               :height="93"
-              :default-per-page="20"
+              :default-per-page="10"
               :simple-columns="true"
               :route-limiters="$route.params.ids"
               :class="['bordered']"

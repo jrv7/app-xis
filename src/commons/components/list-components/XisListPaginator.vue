@@ -55,6 +55,11 @@ export default {
     pageChanged (currentPage) {
       this.$emit('page-changed', currentPage);
     },
+  },
+  created () {
+    if (this.pageSize) {
+      this.currentPageSize = this.deepClone(this.pageSize);
+    }
   }
 }
 </script>
